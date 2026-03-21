@@ -1,13 +1,12 @@
 "use client"
-import type { Metadata } from "next";
-import { Inter } from "next/font/google";
-import Link from "next/link";
-import "./globals.css";
-import { NavLinks } from "@/components/NavLinks";
+import { Inter } from "next/font/google"
+import Link from "next/link"
+import "./globals.css"
+import { NavLinks } from "@/components/NavLinks"
 import DoctorChat from "@/components/DoctorChat"
+import AvatarPanel from "@/components/AvatarPanel"
 
-const inter = Inter({ subsets: ["latin"] });
-
+const inter = Inter({ subsets: ["latin"] })
 
 const navLinks = [
   { label: "Home", to: "/", icon: "🏠" },
@@ -16,13 +15,14 @@ const navLinks = [
   { label: "Nutrition", to: "/nutrition", icon: "🥗" },
   { label: "Exercise", to: "/exercise", icon: "🏃" },
   { label: "Wellness", to: "/wellness", icon: "🧘" },
-];
+]
 
 export default function RootLayout({ children }: { children: React.ReactNode }) {
   return (
     <html lang="en">
       <body className={`${inter.className} min-h-screen bg-[#0F172A] text-white`}>
-        <aside className="fixed top-0 left-0 h-full w-56 border-r border-[#334155] flex flex-col py-8 px-4 bg-[#1E293B]">
+        <aside className="fixed top-0 left-0 h-full w-56 border-r border-[#334155]
+          flex flex-col py-8 px-4 bg-[#1E293B]">
           <Link href="/" className="text-2xl font-bold mb-10 px-3 text-[#FF9933]">
             MediSaral
           </Link>
@@ -30,14 +30,10 @@ export default function RootLayout({ children }: { children: React.ReactNode }) 
         </aside>
 
         <main className="ml-56 min-h-screen">{children}</main>
-        <main className="ml-56 min-h-screen">
-          {children}
-        </main>
-        <DoctorChat
-          language="hindi"
-          onSend={async (msg) => { return "Test response" }}
-        />
+
+        <DoctorChat onSend={async (msg) => { return "Test response" }} />
+        <AvatarPanel />
       </body>
     </html>
-  );
+  )
 }

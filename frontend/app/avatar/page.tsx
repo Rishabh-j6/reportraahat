@@ -1,7 +1,8 @@
 "use client"
-import { motion } from "framer-motion";
-import { ArrowLeft } from "lucide-react";
-import { useRouter } from "next/navigation";
+import { useGUCStore } from "@/lib/store"
+import { motion } from "framer-motion"
+import { ArrowLeft } from "lucide-react"
+import { useRouter } from "next/navigation"
 
 const LEVELS = [
   { level: 1, emoji: "😔", title: "Rogi", color: "#EF4444", xp: 0 },
@@ -9,7 +10,7 @@ const LEVELS = [
   { level: 3, emoji: "💪", title: "Swasth", color: "#10B981", xp: 300 },
   { level: 4, emoji: "⚔️", title: "Yoddha", color: "#3B82F6", xp: 500 },
   { level: 5, emoji: "👑", title: "Nirogh", color: "#A855F7", xp: 750 },
-];
+]
 
 const XP_ACTIONS = [
   { emoji: "📄", text: "Report upload karo", xp: 50 },
@@ -20,24 +21,25 @@ const XP_ACTIONS = [
   { emoji: "😊", text: "Mood check-in karo", xp: 5 },
   { emoji: "🔥", text: "7-day streak banao", xp: 25 },
   { emoji: "📤", text: "Family se share karo", xp: 30 },
-];
-
-const currentXP = 240;
-const currentLevel = 2;
+]
 
 const fade = (delay = 0) => ({
   initial: { opacity: 0, y: 20 },
   animate: { opacity: 1, y: 0 },
   transition: { duration: 0.5, delay },
-});
+})
 
 export default function AvatarPage() {
-  const router = useRouter();
-  const lvl = LEVELS[currentLevel - 1];
-  const nextLvl = LEVELS[currentLevel];
+  const router = useRouter()
+  const { avatarXP: currentXP } = useGUCStore()
+  const currentLevel = currentXP >= 750 ? 5 : currentXP >= 500 ? 4 : currentXP >= 300 ? 3 : currentXP >= 150 ? 2 : 1
+
+
+  const lvl = LEVELS[currentLevel - 1]
+  const nextLvl = LEVELS[currentLevel]
   const progress = nextLvl
     ? ((currentXP - lvl.xp) / (nextLvl.xp - lvl.xp)) * 100
-    : 100;
+    : 100
 
   return (
     <div className="min-h-screen px-4 py-6 pb-24" style={{ background: "#0F172A", color: "#fff" }}>
@@ -50,28 +52,19 @@ export default function AvatarPage() {
         <ArrowLeft size={18} /> Back
       </motion.button>
 
-      <motion.h1
-        className="mb-6 text-2xl font-bold"
-        style={{ color: "#FF9933" }}
-        {...fade(0.05)}
-      >
+      <motion.h1 className="mb-6 text-2xl font-bold" style={{ color: "#FF9933" }} {...fade(0.05)}>
         ⚡ Mera Avatar
       </motion.h1>
 
       {/* Main card */}
       <motion.div
         className="mb-8 rounded-2xl p-6 text-center"
-        style={{
-          border: `2px solid ${lvl.color}`,
-          background: `${lvl.color}15`,
-        }}
+        style={{ border: `2px solid ${lvl.color}`, background: `${lvl.color}15` }}
         {...fade(0.1)}
       >
         <div className="text-7xl mb-3">{lvl.emoji}</div>
         <div className="text-2xl font-bold mb-1">{lvl.title}</div>
-        <div className="text-sm mb-4" style={{ color: "#94A3B8" }}>
-          Level {currentLevel}
-        </div>
+        <div className="text-sm mb-4" style={{ color: "#94A3B8" }}>Level {currentLevel}</div>
         <div className="w-full rounded-full h-3 mb-2" style={{ background: "#1E293B" }}>
           <motion.div
             className="h-3 rounded-full"
@@ -91,9 +84,9 @@ export default function AvatarPage() {
         <h2 className="text-lg font-bold mb-4">🗺️ Level Journey</h2>
         <div className="flex flex-col gap-3">
           {LEVELS.map((l) => {
-            const completed = l.level < currentLevel;
-            const current = l.level === currentLevel;
-            const future = l.level > currentLevel;
+            const completed = l.level < currentLevel
+            const current = l.level === currentLevel
+            const future = l.level > currentLevel
             return (
               <motion.div
                 key={l.level}
@@ -108,13 +101,11 @@ export default function AvatarPage() {
                 <span className="text-3xl">{l.emoji}</span>
                 <div className="flex-1">
                   <div className="font-semibold">{l.title}</div>
-                  <div className="text-xs" style={{ color: "#94A3B8" }}>
-                    Level {l.level}
-                  </div>
+                  <div className="text-xs" style={{ color: "#94A3B8" }}>Level {l.level}</div>
                 </div>
                 {completed && <span className="text-lg">✅</span>}
               </motion.div>
-            );
+            )
           })}
         </div>
       </motion.div>
@@ -132,13 +123,11 @@ export default function AvatarPage() {
             >
               <div className="text-2xl mb-1">{a.emoji}</div>
               <div className="text-xs mb-1">{a.text}</div>
-              <div className="text-sm font-bold" style={{ color: "#FF9933" }}>
-                +{a.xp} XP
-              </div>
+              <div className="text-sm font-bold" style={{ color: "#FF9933" }}>+{a.xp} XP</div>
             </motion.div>
           ))}
         </div>
       </motion.div>
     </div>
-  );
+  )
 }

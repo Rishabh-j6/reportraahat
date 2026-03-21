@@ -1,40 +1,53 @@
-// OWNER: Member 3
-// Fixed bottom-right Lottie avatar
-// Reads avatarState from GUC store
-// 9 states: IDLE, WAVING, THINKING, ANALYZING, SPEAKING, HAPPY, LEVEL_UP, CONCERNED, CELEBRATING
-// Falls back to animated SVG if Lottie file missing
-// Shows XP bar + level label underneath
-//
-// Lottie files to download from lottiefiles.com (search "robot doctor"):
-//   public/lottie/idle.json
-//   public/lottie/thinking.json
-//   public/lottie/happy.json
-//   public/lottie/levelup.json
-//   public/lottie/concerned.json
-//   public/lottie/celebrating.json
+"use client"
+import { useGUCStore } from "@/lib/store"
 
-import { AvatarState } from "@/lib/store"
+export default function AvatarPanel() {
+  const { avatarState, avatarXP } = useGUCStore()
+  const avatarLevel = avatarXP >= 750 ? 5 : avatarXP >= 500 ? 4 : avatarXP >= 300 ? 3 : avatarXP >= 150 ? 2 : 1
 
-interface AvatarPanelProps {
-  avatarState?: AvatarState
-  avatarLevel?: number
-  avatarXP?: number
-}
+  const levelColors = ["", "#94a3b8", "#f97316", "#22c55e", "#3b82f6", "#fbbf24"]
+  const levelTitles = ["", "Rogi", "Jagruk", "Swasth", "Yoddha", "Nirogh"]
+  const color = levelColors[avatarLevel]
 
-export default function AvatarPanel({
-  avatarState = "IDLE",
-  avatarLevel = 1,
-  avatarXP = 0,
-}: AvatarPanelProps) {
-  // TODO Member 3: implement full Lottie state machine
   return (
     <div className="fixed bottom-6 right-6 z-50 flex flex-col items-center gap-1">
-      <div className="w-16 h-16 rounded-full bg-slate-800 border-2 border-primary
-        flex items-center justify-center text-2xl">
+
+      {/* State tooltip */}
+      {avatarState !== "IDLE" && (
+        <div className="text-xs px-2 py-1 rounded-full bg-slate-800 border
+          border-slate-600 text-[#FF9933] whitespace-nowrap mb-1">
+          {avatarState === "THINKING" && "Soch raha hoon..."}
+          {avatarState === "ANALYZING" && "Analyze ho raha hai..."}
+          {avatarState === "HAPPY" && "Shabash! 🎉"}
+          {avatarState === "LEVEL_UP" && "Level Up! ⚡"}
+          {avatarState === "SPEAKING" && "Sun lo..."}
+          {avatarState === "CONCERNED" && "Dhyan do..."}
+        </div>
+      )}
+
+      {/* Avatar circle */}
+      <div
+        className="w-16 h-16 rounded-full bg-slate-900 border-2
+          flex items-center justify-center text-2xl"
+        style={{ borderColor: color }}
+      >
         🤖
       </div>
-      <span className="text-[10px] text-slate-500">
-        Lv.{avatarLevel} • {avatarXP}xp
+
+      {/* XP bar */}
+      <div className="w-16 h-1.5 bg-slate-800 rounded-full overflow-hidden">
+        <div
+          className="h-full rounded-full transition-all duration-1000"
+          style={{
+            background: color,
+            width: `${Math.min((avatarXP % 250) / 250 * 100, 100)}%`
+          }}
+        />
+      </div>
+
+      {/* Level label */}
+      <span className="text-[10px] text-slate-500 font-medium">
+        Lv.{avatarLevel} {levelTitles[avatarLevel]} • {avatarXP}xp
       </span>
     </div>
   )
