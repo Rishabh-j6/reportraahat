@@ -1,11 +1,5 @@
 "use client";
 
-// ============================================================
-// nutrition/page.tsx — MEMBER 4 OWNS THIS
-// Radar chart of nutrient targets + food recommendation cards
-// Calls GET /nutrition with dietary_flags from GUC
-// ============================================================
-
 import { useEffect, useState } from "react";
 import { motion, AnimatePresence } from "framer-motion";
 import {
@@ -17,8 +11,6 @@ import {
   Tooltip,
 } from "recharts";
 import { useGUCStore } from "@/lib/store";
-
-// ── Types ─────────────────────────────────────────────────────
 
 interface FoodItem {
   name_english: string;
@@ -34,72 +26,73 @@ interface NutritionResponse {
   deficiency_summary: string;
 }
 
-// ── Nutrient display config ────────────────────────────────────
-
 const NUTRIENT_LABELS: Record<string, { label: string; unit: string; icon: string }> = {
-  protein_g: { label: "Protein", unit: "g", icon: "💪" },
-  iron_mg: { label: "Iron", unit: "mg", icon: "🩸" },
-  calcium_mg: { label: "Calcium", unit: "mg", icon: "🦴" },
-  vitaminD_iu: { label: "Vit D", unit: "IU", icon: "☀️" },
-  fiber_g: { label: "Fiber", unit: "g", icon: "🌾" },
-  calories_kcal: { label: "Calories", unit: "kcal", icon: "⚡" },
+  protein_g:     { label: "Protein",   unit: "g",   icon: "💪" },
+  iron_mg:       { label: "Iron",      unit: "mg",  icon: "🩸" },
+  calcium_mg:    { label: "Calcium",   unit: "mg",  icon: "🦴" },
+  vitaminD_iu:   { label: "Vit D",     unit: "IU",  icon: "☀️" },
+  fiber_g:       { label: "Fiber",     unit: "g",   icon: "🌾" },
+  calories_kcal: { label: "Calories",  unit: "kcal",icon: "⚡" },
 };
 
 const FOOD_GROUP_COLORS: Record<string, string> = {
   "Green Leafy Vegetables": "#22C55E",
-  "Cereals & Millets": "#F59E0B",
-  "Grain Legumes": "#F97316",
-  "Fruits": "#EC4899",
-  "Nuts & Oil Seeds": "#8B5CF6",
-  "Milk & Products": "#06B6D4",
-  "Eggs": "#EAB308",
-  "Condiments & Spices": "#EF4444",
+  "Cereals & Millets":      "#F59E0B",
+  "Grain Legumes":          "#F97316",
+  "Fruits":                 "#EC4899",
+  "Nuts & Oil Seeds":       "#8B5CF6",
+  "Milk & Products":        "#06B6D4",
+  "Eggs":                   "#EAB308",
+  "Condiments & Spices":    "#EF4444",
 };
 
-// ── Radar chart data builder ───────────────────────────────────
+const FOOD_ICONS: Record<string, string> = {
+  "Green Leafy Vegetables": "🥬",
+  "Cereals & Millets":      "🌾",
+  "Grain Legumes":          "🫘",
+  "Fruits":                 "🍎",
+  "Nuts & Oil Seeds":       "🥜",
+  "Milk & Products":        "🥛",
+  "Eggs":                   "🥚",
+  "Condiments & Spices":    "🌿",
+};
 
-function buildRadarData(
-  targets: Record<string, number>,
-  logged: string[]
-): { nutrient: string; target: number; current: number }[] {
-  // Simplified current vs target — in real app would track logged meals
-  const loggedCount = logged.length;
+function buildRadarData(loggedCount: number) {
   return [
-    { nutrient: "Protein", target: 100, current: Math.min(100, loggedCount * 15 + 30) },
-    { nutrient: "Iron", target: 100, current: Math.min(100, loggedCount * 12 + 20) },
-    { nutrient: "Calcium", target: 100, current: Math.min(100, loggedCount * 10 + 25) },
-    { nutrient: "Vit D", target: 100, current: Math.min(100, loggedCount * 8 + 15) },
-    { nutrient: "Fiber", target: 100, current: Math.min(100, loggedCount * 14 + 35) },
+    { nutrient: "Protein",  target: 100, current: Math.min(100, loggedCount * 15 + 30) },
+    { nutrient: "Iron",     target: 100, current: Math.min(100, loggedCount * 12 + 20) },
+    { nutrient: "Calcium",  target: 100, current: Math.min(100, loggedCount * 10 + 25) },
+    { nutrient: "Vit D",    target: 100, current: Math.min(100, loggedCount * 8  + 15) },
+    { nutrient: "Fiber",    target: 100, current: Math.min(100, loggedCount * 14 + 35) },
   ];
 }
 
-// ── Main component ────────────────────────────────────────────
-
 export default function NutritionPage() {
-  const {
-    nutritionProfile,
-    latestReport,
-    profile,
-    logFood,
-    addXP,
-    setAvatarState,
-  } = useGUCStore();
+  const nutritionProfile = useGUCStore((s) => s.nutritionProfile);
+  const latestReport     = useGUCStore((s) => s.latestReport);
+  const profile          = useGUCStore((s) => s.profile);
+  const logFood          = useGUCStore((s) => s.logFood);
+  const addXP            = useGUCStore((s) => s.addXP);
+  const setAvatarState   = useGUCStore((s) => s.setAvatarState);
 
-  const [data, setData] = useState<NutritionResponse | null>(null);
-  const [loading, setLoading] = useState(true);
-  const [error, setError] = useState(false);
-  const [loggedToday, setLoggedToday] = useState<string[]>(
-    nutritionProfile.loggedToday
-  );
-  const [activeCard, setActiveCard] = useState<string | null>(null);
+  const [data, setData]         = useState<NutritionResponse | null>(null);
+  const [loading, setLoading]   = useState(true);
+  const [error, setError]       = useState(false);
+  const [loggedToday, setLoggedToday] = useState<string[]>([]);
+  const [activeCard, setActiveCard]   = useState<string | null>(null);
 
   const API_BASE = process.env.NEXT_PUBLIC_API_URL ?? "http://localhost:8000";
-  const flags = nutritionProfile.deficiencies.join(",") || "INCREASE_IRON";
+  const flags    = nutritionProfile.deficiencies.join(",") || "INCREASE_IRON";
+
+  useEffect(() => {
+    setLoggedToday(nutritionProfile.loggedToday);
+  }, [nutritionProfile.loggedToday]);
 
   useEffect(() => {
     const fetchNutrition = async () => {
       try {
         setLoading(true);
+        setError(false);
         const res = await fetch(
           `${API_BASE}/nutrition?dietary_flags=${flags}&language=${profile.language}`
         );
@@ -107,9 +100,9 @@ export default function NutritionPage() {
         const json: NutritionResponse = await res.json();
         setData(json);
       } catch {
-        // Fallback to static endpoint
         try {
           const res = await fetch(`${API_BASE}/nutrition/fallback`);
+          if (!res.ok) throw new Error();
           const json: NutritionResponse = await res.json();
           setData(json);
         } catch {
@@ -120,7 +113,7 @@ export default function NutritionPage() {
       }
     };
     fetchNutrition();
-  }, [flags]);
+  }, [flags, API_BASE, profile.language]);
 
   const handleAddToToday = (food: FoodItem) => {
     logFood(food.name_english);
@@ -129,12 +122,7 @@ export default function NutritionPage() {
     setAvatarState("HAPPY");
   };
 
-  const radarData = buildRadarData(
-    nutritionProfile.dailyTargets,
-    loggedToday
-  );
-
-  // ── Skeleton loader ───────────────────────────────────────
+  const radarData = buildRadarData(loggedToday.length);
 
   if (loading) {
     return (
@@ -154,7 +142,6 @@ export default function NutritionPage() {
 
   return (
     <div className="min-h-screen bg-[#0d0d1a] text-white">
-      {/* Background texture */}
       <div
         className="fixed inset-0 opacity-[0.03] pointer-events-none"
         style={{
@@ -164,61 +151,43 @@ export default function NutritionPage() {
       />
 
       <div className="relative max-w-2xl mx-auto px-4 py-6 pb-24">
-        {/* ── Header ─────────────────────────────────────── */}
-        <motion.div
-          initial={{ opacity: 0, y: -12 }}
-          animate={{ opacity: 1, y: 0 }}
-          className="mb-6"
-        >
+
+        {/* Header */}
+        <motion.div initial={{ opacity: 0, y: -12 }} animate={{ opacity: 1, y: 0 }} className="mb-6">
           <div className="flex items-center gap-3 mb-1">
             <span className="text-2xl">🥗</span>
-            <h1 className="text-xl font-bold tracking-tight">
-              Nutrition Profile
-            </h1>
+            <h1 className="text-xl font-bold tracking-tight">Nutrition Profile</h1>
           </div>
-          <p className="text-white/40 text-sm">
-            Based on your report findings · IFCT 2017 Indian Food Data
-          </p>
+          <p className="text-white/40 text-sm">Based on your report · IFCT 2017 Indian Food Data</p>
         </motion.div>
 
-        {/* ── Deficiency Summary Banner ───────────────────── */}
+        {/* Deficiency banner */}
         {data?.deficiency_summary && (
           <motion.div
-            initial={{ opacity: 0, y: 8 }}
-            animate={{ opacity: 1, y: 0 }}
-            transition={{ delay: 0.1 }}
+            initial={{ opacity: 0, y: 8 }} animate={{ opacity: 1, y: 0 }} transition={{ delay: 0.1 }}
             className="mb-5 p-3.5 rounded-xl bg-[#FF9933]/10 border border-[#FF9933]/20"
           >
-            <p className="text-[#FF9933] text-xs leading-relaxed">
-              {data.deficiency_summary}
-            </p>
+            <p className="text-[#FF9933] text-xs leading-relaxed">{data.deficiency_summary}</p>
           </motion.div>
         )}
 
-        {/* ── Daily Targets Grid ──────────────────────────── */}
+        {/* Daily targets grid */}
         <motion.div
-          initial={{ opacity: 0, y: 12 }}
-          animate={{ opacity: 1, y: 0 }}
-          transition={{ delay: 0.15 }}
+          initial={{ opacity: 0, y: 12 }} animate={{ opacity: 1, y: 0 }} transition={{ delay: 0.15 }}
           className="mb-5"
         >
-          <p className="text-white/40 text-xs font-medium uppercase tracking-widest mb-3">
-            Daily Targets
-          </p>
+          <p className="text-white/40 text-xs font-medium uppercase tracking-widest mb-3">Daily Targets</p>
           <div className="grid grid-cols-3 gap-2">
             {Object.entries(NUTRIENT_LABELS).map(([key, meta]) => {
-              const value = data?.daily_targets[key] ?? nutritionProfile.dailyTargets[key as keyof typeof nutritionProfile.dailyTargets] ?? 0;
+              const val = data?.daily_targets[key]
+                ?? nutritionProfile.dailyTargets[key as keyof typeof nutritionProfile.dailyTargets]
+                ?? 0;
               return (
-                <div
-                  key={key}
-                  className="bg-white/[0.04] border border-white/[0.07] rounded-xl p-3"
-                >
+                <div key={key} className="bg-white/[0.04] border border-white/[0.07] rounded-xl p-3">
                   <div className="text-lg mb-1">{meta.icon}</div>
                   <div className="text-white font-semibold text-sm">
-                    {typeof value === "number" ? value.toLocaleString() : value}
-                    <span className="text-white/30 text-[10px] ml-0.5">
-                      {meta.unit}
-                    </span>
+                    {typeof val === "number" ? val.toLocaleString() : val}
+                    <span className="text-white/30 text-[10px] ml-0.5">{meta.unit}</span>
                   </div>
                   <div className="text-white/35 text-[10px]">{meta.label}</div>
                 </div>
@@ -227,62 +196,30 @@ export default function NutritionPage() {
           </div>
         </motion.div>
 
-        {/* ── Radar Chart ────────────────────────────────── */}
+        {/* Radar chart */}
         <motion.div
-          initial={{ opacity: 0, scale: 0.97 }}
-          animate={{ opacity: 1, scale: 1 }}
-          transition={{ delay: 0.2 }}
+          initial={{ opacity: 0, scale: 0.97 }} animate={{ opacity: 1, scale: 1 }} transition={{ delay: 0.2 }}
           className="mb-5 bg-white/[0.03] border border-white/[0.07] rounded-2xl p-4"
         >
           <div className="flex justify-between items-center mb-3">
-            <p className="text-white/60 text-xs font-medium uppercase tracking-widest">
-              Coverage Today
-            </p>
+            <p className="text-white/60 text-xs font-medium uppercase tracking-widest">Coverage Today</p>
             <div className="flex gap-3 text-[10px] text-white/40">
               <span className="flex items-center gap-1">
-                <span
-                  className="w-2 h-2 rounded-full inline-block"
-                  style={{ background: "#FF9933" }}
-                />
-                Current
+                <span className="w-2 h-2 rounded-full inline-block" style={{ background: "#FF9933" }} />Current
               </span>
               <span className="flex items-center gap-1">
-                <span
-                  className="w-2 h-2 rounded-full inline-block bg-white/20"
-                />
-                Target
+                <span className="w-2 h-2 rounded-full inline-block bg-white/20" />Target
               </span>
             </div>
           </div>
           <ResponsiveContainer width="100%" height={220}>
             <RadarChart data={radarData} margin={{ top: 8, right: 16, bottom: 8, left: 16 }}>
               <PolarGrid stroke="rgba(255,255,255,0.06)" />
-              <PolarAngleAxis
-                dataKey="nutrient"
-                tick={{ fill: "rgba(255,255,255,0.4)", fontSize: 11 }}
-              />
-              <Radar
-                name="Target"
-                dataKey="target"
-                stroke="rgba(255,255,255,0.12)"
-                fill="rgba(255,255,255,0.04)"
-                strokeWidth={1}
-              />
-              <Radar
-                name="Current"
-                dataKey="current"
-                stroke="#FF9933"
-                fill="#FF9933"
-                fillOpacity={0.18}
-                strokeWidth={2}
-              />
+              <PolarAngleAxis dataKey="nutrient" tick={{ fill: "rgba(255,255,255,0.4)", fontSize: 11 }} />
+              <Radar name="Target"  dataKey="target"  stroke="rgba(255,255,255,0.12)" fill="rgba(255,255,255,0.04)" strokeWidth={1} />
+              <Radar name="Current" dataKey="current" stroke="#FF9933" fill="#FF9933" fillOpacity={0.18} strokeWidth={2} />
               <Tooltip
-                contentStyle={{
-                  background: "#1a1a2e",
-                  border: "1px solid rgba(255,255,255,0.1)",
-                  borderRadius: "8px",
-                  fontSize: "11px",
-                }}
+                contentStyle={{ background: "#1a1a2e", border: "1px solid rgba(255,255,255,0.1)", borderRadius: "8px", fontSize: "11px" }}
               />
             </RadarChart>
           </ResponsiveContainer>
@@ -293,7 +230,7 @@ export default function NutritionPage() {
           )}
         </motion.div>
 
-        {/* ── Food Cards ─────────────────────────────────── */}
+        {/* Food cards */}
         <div className="mb-3">
           <p className="text-white/40 text-xs font-medium uppercase tracking-widest mb-3">
             Recommended for You · Top Indian Foods
@@ -301,17 +238,17 @@ export default function NutritionPage() {
 
           {error && (
             <div className="text-white/40 text-sm text-center py-8">
-              Unable to load food data. Check your connection.
+              Unable to load food data. Make sure the backend is running.
             </div>
           )}
 
           <div className="space-y-2.5">
             <AnimatePresence>
               {(data?.recommended_foods ?? []).map((food, i) => {
-                const groupColor =
-                  FOOD_GROUP_COLORS[food.food_group] ?? "#FF9933";
-                const isLogged = loggedToday.includes(food.name_english);
+                const groupColor = FOOD_GROUP_COLORS[food.food_group] ?? "#FF9933";
+                const isLogged   = loggedToday.includes(food.name_english);
                 const isExpanded = activeCard === food.name_english;
+                const icon       = FOOD_ICONS[food.food_group] ?? "🌿";
 
                 return (
                   <motion.div
@@ -321,65 +258,36 @@ export default function NutritionPage() {
                     transition={{ delay: i * 0.06, duration: 0.3 }}
                     className="rounded-xl border overflow-hidden"
                     style={{
-                      background: isExpanded
-                        ? "rgba(255,255,255,0.05)"
-                        : "rgba(255,255,255,0.025)",
-                      borderColor: isExpanded
-                        ? `${groupColor}40`
-                        : "rgba(255,255,255,0.07)",
+                      background:   isExpanded ? "rgba(255,255,255,0.05)" : "rgba(255,255,255,0.025)",
+                      borderColor:  isExpanded ? `${groupColor}40` : "rgba(255,255,255,0.07)",
                     }}
                   >
                     {/* Card header */}
                     <button
                       className="w-full flex items-center gap-3 p-3.5 text-left"
-                      onClick={() =>
-                        setActiveCard(
-                          isExpanded ? null : food.name_english
-                        )
-                      }
+                      onClick={() => setActiveCard(isExpanded ? null : food.name_english)}
                     >
                       <div
                         className="w-8 h-8 rounded-lg flex items-center justify-center flex-shrink-0 text-sm"
                         style={{ background: `${groupColor}20`, color: groupColor }}
                       >
-                        {food.food_group.includes("Vegetable") ? "🥬" :
-                         food.food_group.includes("Cereal") ? "🌾" :
-                         food.food_group.includes("Legume") ? "🫘" :
-                         food.food_group.includes("Fruit") ? "🍎" :
-                         food.food_group.includes("Nut") ? "🥜" :
-                         food.food_group.includes("Milk") ? "🥛" :
-                         food.food_group.includes("Egg") ? "🥚" : "🌿"}
+                        {icon}
                       </div>
-
                       <div className="flex-1 min-w-0">
                         <div className="flex items-center gap-2 flex-wrap">
-                          <span className="text-white text-sm font-medium">
-                            {food.name_english}
-                          </span>
-                          <span className="text-white/40 text-xs">
-                            {food.name_hindi}
-                          </span>
+                          <span className="text-white text-sm font-medium">{food.name_english}</span>
+                          <span className="text-white/40 text-xs">{food.name_hindi}</span>
                         </div>
-                        <div className="flex items-center gap-1.5 mt-0.5 flex-wrap">
-                          <span
-                            className="text-[10px] px-1.5 py-0.5 rounded-full"
-                            style={{
-                              background: `${groupColor}15`,
-                              color: groupColor,
-                            }}
-                          >
-                            {food.food_group}
-                          </span>
-                        </div>
-                      </div>
-
-                      <div className="flex-shrink-0 flex items-center gap-2">
-                        {isLogged && (
-                          <span className="text-green-400 text-xs">✓ added</span>
-                        )}
-                        <span className="text-white/20 text-xs">
-                          {isExpanded ? "▲" : "▼"}
+                        <span
+                          className="text-[10px] px-1.5 py-0.5 rounded-full mt-0.5 inline-block"
+                          style={{ background: `${groupColor}15`, color: groupColor }}
+                        >
+                          {food.food_group}
                         </span>
+                      </div>
+                      <div className="flex-shrink-0 flex items-center gap-2">
+                        {isLogged && <span className="text-green-400 text-xs">✓ added</span>}
+                        <span className="text-white/20 text-xs">{isExpanded ? "▲" : "▼"}</span>
                       </div>
                     </button>
 
@@ -394,7 +302,6 @@ export default function NutritionPage() {
                           className="overflow-hidden"
                         >
                           <div className="px-3.5 pb-3.5 space-y-3">
-                            {/* Nutrient highlights */}
                             <div className="flex flex-wrap gap-2">
                               {Object.entries(food.nutrient_highlights)
                                 .filter(([, v]) => v > 0)
@@ -403,31 +310,17 @@ export default function NutritionPage() {
                                   const meta = NUTRIENT_LABELS[key];
                                   if (!meta) return null;
                                   return (
-                                    <div
-                                      key={key}
-                                      className="flex items-center gap-1.5 bg-white/5 rounded-lg px-2 py-1"
-                                    >
+                                    <div key={key} className="flex items-center gap-1.5 bg-white/5 rounded-lg px-2 py-1">
                                       <span className="text-xs">{meta.icon}</span>
                                       <span className="text-white/70 text-[11px]">
-                                        {meta.label}:{" "}
-                                        <strong className="text-white">
-                                          {value}
-                                        </strong>
-                                        <span className="text-white/30">
-                                          {meta.unit}
-                                        </span>
+                                        {meta.label}: <strong className="text-white">{value}</strong>
+                                        <span className="text-white/30">{meta.unit}</span>
                                       </span>
                                     </div>
                                   );
                                 })}
                             </div>
-
-                            {/* Serving suggestion */}
-                            <p className="text-white/40 text-xs">
-                              📏 {food.serving_suggestion}
-                            </p>
-
-                            {/* Add to today button */}
+                            <p className="text-white/40 text-xs">📏 {food.serving_suggestion}</p>
                             <motion.button
                               whileTap={{ scale: 0.96 }}
                               onClick={() => handleAddToToday(food)}
@@ -435,14 +328,8 @@ export default function NutritionPage() {
                               className="w-full py-2 rounded-lg text-xs font-medium transition-all"
                               style={
                                 isLogged
-                                  ? {
-                                      background: "rgba(34,197,94,0.1)",
-                                      color: "#22C55E",
-                                    }
-                                  : {
-                                      background: groupColor,
-                                      color: "#0d0d1a",
-                                    }
+                                  ? { background: "rgba(34,197,94,0.1)", color: "#22C55E" }
+                                  : { background: groupColor, color: "#0d0d1a" }
                               }
                             >
                               {isLogged ? "✓ Added to Today" : "Add to Today · +15 XP"}
@@ -458,7 +345,6 @@ export default function NutritionPage() {
           </div>
         </div>
 
-        {/* ── IFCT credit ─────────────────────────────────── */}
         <p className="text-white/15 text-[10px] text-center mt-6">
           Nutritional data: IFCT 2017 · National Institute of Nutrition, ICMR
         </p>
