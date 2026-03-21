@@ -1,44 +1,78 @@
-# ============================================================
-# main.py — FastAPI entry point — MEMBER 4 OWNS THIS
-# Run: uvicorn app.main:app --reload --port 8000
-# ============================================================
+# main.py — FINAL MERGED VERSION
+# Member 4's CORS + routers + Member 1's lifespan ML preload
 
 from fastapi import FastAPI
 from fastapi.middleware.cors import CORSMiddleware
+from contextlib import asynccontextmanager
 
-from app.routers import nutrition, exercise, analyze, chat
+from app.routers import analyze, chat, nutrition, exercise  # ← all 4 routers
+
+
+@asynccontextmanager
+async def lifespan(app: FastAPI):
+    print("Starting ReportRaahat backend...")
+    try:
+        from app.ml.model import load_model
+        from app.ml.rag import load_nidaan_index, load_doctor_index
+        load_model()
+        load_nidaan_index()
+        load_doctor_index()
+        print("All ML models loaded.")
+    except Exception as e:
+        print(f"ML models not loaded (mock mode): {e}")
+    yield
+    print("Shutting down.")
+
 
 app = FastAPI(
     title="ReportRaahat API",
-    description="AI-powered medical report simplifier — HackerzStreet 4.0",
+    description="AI-powered medical report simplifier for rural India",
     version="2.0.0",
+    lifespan=lifespan,
 )
 
-# ── CORS — allow Vercel frontend + local dev ──────────────────
 app.add_middleware(
     CORSMiddleware,
     allow_origins=[
         "http://localhost:3000",
+        "https://reportraahat.vercel.app",
         "https://*.vercel.app",
-        # Add your Railway/Render URL here when deploying
     ],
     allow_credentials=True,
     allow_methods=["*"],
     allow_headers=["*"],
 )
 
-# ── Routers ───────────────────────────────────────────────────
+# Member 1's routes
+app.include_router(analyze.router,   prefix="/analyze",   tags=["Report Analysis"])
+app.include_router(chat.router,      prefix="/chat",      tags=["Doctor Chat"])
+
+# Member 4's routes
 app.include_router(nutrition.router, prefix="/nutrition", tags=["Nutrition"])
-app.include_router(exercise.router, prefix="/exercise", tags=["Exercise"])
-app.include_router(analyze.router, prefix="/analyze", tags=["ML - Member 1"])
-app.include_router(chat.router, prefix="/chat", tags=["ML - Member 1"])
+app.include_router(exercise.router,  prefix="/exercise",  tags=["Exercise"])
 
 
 @app.get("/")
-def root():
-    return {"status": "ok", "message": "ReportRaahat API is running 🏥"}
+async def root():
+    return {
+        "name": "ReportRaahat API",
+        "version": "2.0.0",
+        "status": "running",
+        "endpoints": {
+            "analyze":   "POST /analyze",
+            "mock":      "GET  /analyze/mock?case=0",
+            "chat":      "POST /chat",
+            "nutrition": "GET  /nutrition?dietary_flags=INCREASE_IRON",
+            "exercise":  "GET  /exercise?exercise_flags=NORMAL_ACTIVITY",
+            "docs":      "/docs",
+        }
+    }
 
 
 @app.get("/health")
-def health():
+async def health():
+<<<<<<< HEAD
     return {"status": "healthy"}
+=======
+    return {"status": "healthy"}
+>>>>>>> a8b61de3a0f89fd0ee578c57565031fc00e0f26b
