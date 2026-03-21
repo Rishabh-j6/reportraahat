@@ -1,3 +1,4 @@
+<<<<<<< HEAD
 # analyze.py — Member 1's file with fixes applied
 # Changes from his original:
 #   1. @router.post("/analyze") → @router.post("/")      [fixes double path]
@@ -53,11 +54,19 @@ def detect_organs(findings: list) -> list[str]:
                 detected.add(organ)
     return list(detected) or ["SYSTEMIC"]
 
+=======
+from fastapi import APIRouter
+from app.schemas import AnalyzeRequest, AnalyzeResponse
+from app.mock_data import MOCK_REPORT_ANEMIA
+
+router = APIRouter()
+>>>>>>> a8b61de3a0f89fd0ee578c57565031fc00e0f26b
 
 # ── FIX 1: "/" not "/analyze" — main.py already adds /analyze prefix ──
 @router.post("/", response_model=AnalyzeResponse)
 # ── FIX 2: JSON body with base64 string, not UploadFile ──────────────
 async def analyze_report(request: AnalyzeRequest):
+<<<<<<< HEAD
     import base64
 
     # Decode base64 image
@@ -206,3 +215,7 @@ async def analyze_report(request: AnalyzeRequest):
 async def mock_analyze(case: int = 0):
     mocks = [MOCK_REPORT_ANEMIA, MOCK_REPORT_LIVER, MOCK_REPORT_VITAMIN_D]
     return AnalyzeResponse(**mocks[case % 3])
+=======
+    """Stub — Member 1 owns this file."""
+    return AnalyzeResponse(**MOCK_REPORT_ANEMIA)
+>>>>>>> a8b61de3a0f89fd0ee578c57565031fc00e0f26b
