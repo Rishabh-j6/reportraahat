@@ -1,0 +1,3 @@
+# Exclude generated and lock files from language statistics
+*.lock linguist:ignore
+*.generated linguist:ignore
