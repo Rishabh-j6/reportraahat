@@ -1,31 +1,44 @@
-# OWNER: Member 4
-# FastAPI entry point — register all routers, configure CORS
-# Member 4 wires up all 4 routers here once they're ready
+# ============================================================
+# main.py — FastAPI entry point — MEMBER 4 OWNS THIS
+# Run: uvicorn app.main:app --reload --port 8000
+# ============================================================
 
 from fastapi import FastAPI
 from fastapi.middleware.cors import CORSMiddleware
-from dotenv import load_dotenv
-import os
 
-load_dotenv()
+from app.routers import nutrition, exercise, analyze, chat
 
-app = FastAPI(title="ReportRaahat API", version="1.0.0")
+app = FastAPI(
+    title="ReportRaahat API",
+    description="AI-powered medical report simplifier — HackerzStreet 4.0",
+    version="2.0.0",
+)
 
+# ── CORS — allow Vercel frontend + local dev ──────────────────
 app.add_middleware(
     CORSMiddleware,
-    allow_origins=[os.getenv("FRONTEND_URL", "http://localhost:3000"), "*"],
+    allow_origins=[
+        "http://localhost:3000",
+        "https://*.vercel.app",
+        # Add your Railway/Render URL here when deploying
+    ],
     allow_credentials=True,
     allow_methods=["*"],
     allow_headers=["*"],
 )
 
-# TODO Member 4: uncomment as each router is ready
-# from app.routers import analyze, chat, nutrition, exercise
-# app.include_router(analyze.router,   prefix="/api", tags=["Analysis"])
-# app.include_router(chat.router,      prefix="/api", tags=["Chat"])
-# app.include_router(nutrition.router, prefix="/api", tags=["Nutrition"])
-# app.include_router(exercise.router,  prefix="/api", tags=["Exercise"])
+# ── Routers ───────────────────────────────────────────────────
+app.include_router(nutrition.router, prefix="/nutrition", tags=["Nutrition"])
+app.include_router(exercise.router, prefix="/exercise", tags=["Exercise"])
+app.include_router(analyze.router, prefix="/analyze", tags=["ML - Member 1"])
+app.include_router(chat.router, prefix="/chat", tags=["ML - Member 1"])
+
+
+@app.get("/")
+def root():
+    return {"status": "ok", "message": "ReportRaahat API is running 🏥"}
+
 
 @app.get("/health")
 def health():
-    return {"status": "ok", "version": "1.0.0"}
+    return {"status": "healthy"}

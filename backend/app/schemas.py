@@ -1,126 +1,173 @@
-# OWNER: Member 1 (ML Engineer)
-# Pydantic models — THE shared contract between backend and frontend
-# Publish this on Day 1 so Member 2 can mirror as TypeScript AnalyzeResponse type
-#
-# Member 1 TODO: fill in all fields to match the Gemini JSON schema from the blueprint
+# ============================================================
+# schemas.py — ALL Pydantic models — shared contract
+# Member 1 owns this. Everyone else imports from here.
+# Frontend mirrors AnalyzeResponse as TypeScript type.
+# ============================================================
 
-from pydantic import BaseModel
-from typing import List, Optional, Literal
+from __future__ import annotations
+from typing import Optional
 from enum import Enum
+from pydantic import BaseModel, Field
+
+
+# ── Enums ─────────────────────────────────────────────────────
+
+class SeverityLevel(str, Enum):
+    NORMAL = "NORMAL"
+    MILD_CONCERN = "MILD_CONCERN"
+    MODERATE_CONCERN = "MODERATE_CONCERN"
+    URGENT = "URGENT"
 
 
 class FindingStatus(str, Enum):
-    HIGH     = "HIGH"
-    LOW      = "LOW"
-    NORMAL   = "NORMAL"
+    HIGH = "HIGH"
+    LOW = "LOW"
+    NORMAL = "NORMAL"
     CRITICAL = "CRITICAL"
 
 
-class Severity(str, Enum):
-    NORMAL           = "NORMAL"
-    MILD_CONCERN     = "MILD_CONCERN"
-    MODERATE_CONCERN = "MODERATE_CONCERN"
-    URGENT           = "URGENT"
+class OrganFlag(str, Enum):
+    LIVER = "LIVER"
+    KIDNEY = "KIDNEY"
+    HEART = "HEART"
+    LUNGS = "LUNGS"
+    BLOOD = "BLOOD"
+    SPINE = "SPINE"
+    BRAIN = "BRAIN"
+    SYSTEMIC = "SYSTEMIC"
+
+
+class DietaryFlag(str, Enum):
+    AVOID_FATTY_FOODS = "AVOID_FATTY_FOODS"
+    INCREASE_IRON = "INCREASE_IRON"
+    INCREASE_VITAMIN_D = "INCREASE_VITAMIN_D"
+    INCREASE_CALCIUM = "INCREASE_CALCIUM"
+    INCREASE_PROTEIN = "INCREASE_PROTEIN"
+    DRINK_MORE_WATER = "DRINK_MORE_WATER"
+    REDUCE_SODIUM = "REDUCE_SODIUM"
+    REDUCE_SUGAR = "REDUCE_SUGAR"
+    LOW_POTASSIUM_DIET = "LOW_POTASSIUM_DIET"
+    DIABETIC_DIET = "DIABETIC_DIET"
+
+
+class ExerciseFlag(str, Enum):
+    LIGHT_WALKING_ONLY = "LIGHT_WALKING_ONLY"
+    CARDIO_RESTRICTED = "CARDIO_RESTRICTED"
+    NORMAL_ACTIVITY = "NORMAL_ACTIVITY"
+    ACTIVE_ENCOURAGED = "ACTIVE_ENCOURAGED"
 
 
 class ReportType(str, Enum):
-    LAB_REPORT        = "LAB_REPORT"
+    LAB_REPORT = "LAB_REPORT"
     DISCHARGE_SUMMARY = "DISCHARGE_SUMMARY"
-    PRESCRIPTION      = "PRESCRIPTION"
-    SCAN_REPORT       = "SCAN_REPORT"
+    PRESCRIPTION = "PRESCRIPTION"
+    SCAN_REPORT = "SCAN_REPORT"
 
+
+# ── Sub-models ────────────────────────────────────────────────
 
 class PatientSummary(BaseModel):
-    name:        str
-    age:         int
-    gender:      str
-    report_date: str
+    name: str = "Patient"
+    age: int = 0
+    gender: str = "UNKNOWN"           # "MALE" | "FEMALE" | "UNKNOWN"
+    report_date: str = "2025-01-01"   # ISO date string
 
 
-class Finding(BaseModel):
-    parameter:                 str
-    value:                     str
-    normal_range:              str
-    status:                    FindingStatus
-    simple_name_hindi:         str
-    simple_name_english:       str
-    layman_explanation_hindi:  str
+class LabFinding(BaseModel):
+    parameter: str
+    value: str
+    normal_range: str
+    status: FindingStatus
+    simple_name_hindi: str
+    simple_name_english: str
+    layman_explanation_hindi: str
     layman_explanation_english: str
 
 
-# ── Request models ─────────────────────────────────────────────────────────────
+# ── /analyze ──────────────────────────────────────────────────
 
 class AnalyzeRequest(BaseModel):
-    image_base64: str
-    mime_type:    str = "image/jpeg"
-    language:     str = "hindi"
-    session_id:   str = "default"
+    image_base64: str = Field(..., description="Base64-encoded image or PDF. May include data URI prefix.")
+    language: str = Field("EN", description="EN | HI | RAJ")
 
+
+class AnalyzeResponse(BaseModel):
+    is_readable: bool
+    report_type: str                        # ReportType enum value
+    patient_summary: PatientSummary
+    findings: list[LabFinding]
+    affected_organs: list[OrganFlag]
+    overall_summary_hindi: str
+    overall_summary_english: str
+    severity_level: SeverityLevel
+    next_steps: list[str]
+    dietary_flags: list[DietaryFlag]
+    exercise_flags: list[ExerciseFlag]
+    ai_confidence_score: float = Field(ge=0, le=100)
+    disclaimer: str
+
+
+# ── /chat ─────────────────────────────────────────────────────
 
 class ChatMessage(BaseModel):
-    role: Literal["user", "model"]
-    text: str
+    role: str     # "user" | "assistant"
+    content: str
 
 
 class ChatRequest(BaseModel):
-    message:        str
-    session_id:     str = "default"
-    language:       str = "hindi"
-    report_context: str = ""
-    chat_history:   List[ChatMessage] = []
-
-
-# ── Response models ────────────────────────────────────────────────────────────
-
-class ReportData(BaseModel):
-    is_readable:              bool
-    report_type:              ReportType
-    patient_summary:          PatientSummary
-    findings:                 List[Finding]
-    affected_organs:          List[str]
-    overall_summary_hindi:    str
-    overall_summary_english:  str
-    severity_level:           Severity
-    next_steps:               List[str]
-    dietary_flags:            List[str]
-    exercise_flags:           List[str]
-    ai_confidence_score:      float
-    disclaimer:               str
-
-
-class AnalyzeResponse(ReportData):
-    # Inherits all ReportData fields
-    # Add any extra fields here if needed
-    pass
+    message: str = Field(..., description="User's current message")
+    guc_context: dict = Field(..., description="Full GUC object from Zustand store")
+    history: list[ChatMessage] = Field(
+        default_factory=list,
+        description="Last N messages for conversation context"
+    )
 
 
 class ChatResponse(BaseModel):
-    answer: str
+    reply: str
+    avatar_state: str = "SPEAKING"     # AvatarState hint for Member 3
 
 
-class NutritionFood(BaseModel):
+# ── /nutrition ────────────────────────────────────────────────
+
+class NutritionRequest(BaseModel):
+    dietary_flags: list[DietaryFlag]
+    language: str = "EN"
+
+
+class FoodItem(BaseModel):
     name_english: str
-    name_hindi:   str
-    nutrients:    str
-    serving:      str
-    emoji:        str
+    name_hindi: str
+    nutrient_highlights: dict   # {"iron_mg": 3.5, "protein_g": 2.1, ...}
+    serving_suggestion: str
+    food_group: str
 
 
 class NutritionResponse(BaseModel):
-    dietary_flags: List[str]
-    foods:         List[NutritionFood]
+    recommended_foods: list[FoodItem]
+    daily_targets: dict
+    deficiency_summary: str
+
+
+# ── /exercise ─────────────────────────────────────────────────
+
+class ExerciseRequest(BaseModel):
+    exercise_flags: list[ExerciseFlag]
+    severity_level: SeverityLevel = SeverityLevel.MILD_CONCERN
+    language: str = "EN"
 
 
 class ExerciseDay(BaseModel):
-    day:          str
-    activity:     str
-    activity_hindi: str
-    duration:     str
+    day: str                  # "Monday" ... "Sunday"
+    activity: str
+    duration_minutes: int
+    intensity: str            # "Very Low" | "Low" | "Moderate" | "High" | "Rest"
+    notes: str
 
 
 class ExerciseResponse(BaseModel):
-    tier:         str
-    title:        str
-    title_hindi:  str
-    description:  str
-    days:         List[ExerciseDay]
+    tier: str
+    tier_description: str
+    weekly_plan: list[ExerciseDay]
+    general_advice: str
+    avoid: list[str]
