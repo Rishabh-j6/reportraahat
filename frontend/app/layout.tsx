@@ -1,61 +1,43 @@
-import type { Metadata } from "next"
-import { Inter } from "next/font/google"
-import "./globals.css"
-import Link from "next/link"
+"use client"
+import type { Metadata } from "next";
+import { Inter } from "next/font/google";
+import Link from "next/link";
+import "./globals.css";
+import { NavLinks } from "@/components/NavLinks";
+import DoctorChat from "@/components/DoctorChat"
 
-const inter = Inter({ subsets: ["latin"] })
+const inter = Inter({ subsets: ["latin"] });
 
-export const metadata: Metadata = {
-  title: "MediSaral",
-  description: "Samjho Apni Sehat",
-}
 
 const navLinks = [
-  { href: "/",          label: "🏠 Home"      },
-  { href: "/dashboard", label: "📊 Dashboard" },
-  { href: "/avatar",    label: "⚡ Avatar"     },
-  { href: "/nutrition", label: "🥗 Nutrition"  },
-  { href: "/exercise",  label: "🏃 Exercise"   },
-  { href: "/wellness",  label: "🧘 Wellness"   },
-]
+  { label: "Home", to: "/", icon: "🏠" },
+  { label: "Dashboard", to: "/dashboard", icon: "📊" },
+  { label: "Avatar", to: "/avatar", icon: "⚡" },
+  { label: "Nutrition", to: "/nutrition", icon: "🥗" },
+  { label: "Exercise", to: "/exercise", icon: "🏃" },
+  { label: "Wellness", to: "/wellness", icon: "🧘" },
+];
 
-export default function RootLayout({
-  children,
-}: {
-  children: React.ReactNode
-}) {
+export default function RootLayout({ children }: { children: React.ReactNode }) {
   return (
     <html lang="en">
-      <body className={`${inter.className} flex min-h-screen bg-[#0F172A] text-white`}>
-
-        {/* Side Nav */}
-        <aside className="w-56 min-h-screen bg-[#1E293B] border-r border-[#334155]
-          flex flex-col px-4 py-6 gap-2 fixed left-0 top-0 z-40">
-
-          {/* Logo */}
-          <div className="text-[#FF9933] font-bold text-xl px-3 mb-6">
+      <body className={`${inter.className} min-h-screen bg-[#0F172A] text-white`}>
+        <aside className="fixed top-0 left-0 h-full w-56 border-r border-[#334155] flex flex-col py-8 px-4 bg-[#1E293B]">
+          <Link href="/" className="text-2xl font-bold mb-10 px-3 text-[#FF9933]">
             MediSaral
-          </div>
-
-          {/* Links */}
-          {navLinks.map(link => (
-            <Link
-              key={link.href}
-              href={link.href}
-              className="text-slate-400 hover:text-white hover:bg-[#0F172A]
-                px-3 py-2.5 rounded-xl text-sm font-medium transition-all"
-            >
-              {link.label}
-            </Link>
-          ))}
+          </Link>
+          <NavLinks links={navLinks} />
         </aside>
 
-        {/* Main content — offset by sidebar width */}
-        <main className="ml-56 flex-1 min-h-screen">
+        <main className="ml-56 min-h-screen">{children}</main>
+        <main className="ml-56 min-h-screen">
           {children}
         </main>
-
+        <DoctorChat
+          language="hindi"
+          onSend={async (msg) => { return "Test response" }}
+        />
       </body>
     </html>
-  )
+  );
 }
