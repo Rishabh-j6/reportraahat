@@ -23,8 +23,11 @@ interface MoodCheckInProps {
 }
 
 export default function MoodCheckIn({ onComplete }: MoodCheckInProps) {
-  const { mentalWellness, updateMentalWellness, setAvatarState, addXP } =
-    useGUCStore();
+  const mentalWellness       = useGUCStore((s) => s.mentalWellness);
+  const updateMentalWellness = useGUCStore((s) => s.updateMentalWellness);
+  const setAvatarState       = useGUCStore((s) => s.setAvatarState);
+  const addXP                = useGUCStore((s) => s.addXP);
+
   const [selectedMoodIndex, setSelectedMoodIndex] = useState<number | null>(null);
   const [sleepRating, setSleepRating] = useState<number>(
     mentalWellness.sleepQuality || 7
