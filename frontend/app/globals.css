@@ -1,0 +1,52 @@
+@tailwind base;
+@tailwind components;
+@tailwind utilities;
+
+:root {
+  --primary: #FF9933;
+  --bg:      #0F172A;
+  --surface: #1E293B;
+  --border:  #334155;
+}
+
+body {
+  background-color: var(--bg);
+  color: white;
+}
+
+/* ── Organ glow animation (Member 2 uses this) ─────────────── */
+@keyframes organPulse {
+  0%, 100% {
+    filter: drop-shadow(0 0 6px #FF9933) drop-shadow(0 0 12px #FF9933);
+    opacity: 0.85;
+  }
+  50% {
+    filter: drop-shadow(0 0 18px #FF9933) drop-shadow(0 0 40px #FF7700);
+    opacity: 1;
+  }
+}
+
+.organ-glow {
+  animation: organPulse 2.2s ease-in-out infinite;
+}
+
+/* ── Health bar fill (Member 3 uses this) ───────────────────── */
+@keyframes healthBarFill {
+  from { width: 0%; }
+  to   { width: var(--health-percent); }
+}
+
+.health-bar-inner {
+  height: 100%;
+  border-radius: 9999px;
+  background: linear-gradient(90deg, #16A34A, #86EFAC, #16A34A);
+  background-size: 200% auto;
+  animation: healthBarFill 1.5s ease-out forwards;
+  box-shadow: 0 0 12px rgba(22, 163, 74, 0.5);
+}
+
+/* ── Shimmer (shared) ───────────────────────────────────────── */
+@keyframes shimmer {
+  0%   { transform: translateX(-100%); }
+  100% { transform: translateX(100%); }
+}
