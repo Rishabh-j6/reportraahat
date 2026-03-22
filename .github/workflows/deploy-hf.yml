@@ -15,16 +15,17 @@ jobs:
       - name: Push to Hugging Face Spaces
         env:
           HF_TOKEN: ${{ secrets.HF_TOKEN }}
+          HF_SPACE: ${{ vars.HF_SPACE_ID || 'CaffeinatedCoding/ReportRaahat' }}
         run: |
           # Configure git
           git config --global user.email "ci@reportraahat.app"
           git config --global user.name "ReportRaahat CI"
 
+          # Build the authenticated URL
+          HF_URL="https://oauth2:${HF_TOKEN}@huggingface.co/spaces/${HF_SPACE}"
+
           # Clone the HF Space repo (or create if doesn't exist)
-          git clone https://huggingface.co/spaces/${{ vars.HF_SPACE_ID || 'CaffeinatedCoding/ReportRaahat' }} hf-space \
-            --depth 1 \
-            -c http.extraHeader="Authorization: Bearer $HF_TOKEN" \
-            || mkdir hf-space
+          git clone "$HF_URL" hf-space --depth 1 || mkdir hf-space
 
           # Sync files to the HF Space
           rsync -av --delete \
@@ -34,6 +35,11 @@ jobs:
             --exclude '.next' \
             --exclude '.env' \
             --exclude 'venv' \
+            --exclude 'hf-space' \
+            --exclude 'tsc_errors*' \
+            --exclude 'pip_output*' \
+            --exclude 'build_output*' \
+            --exclude 'dump.txt' \
             ./ hf-space/
 
           # Use the HF Spaces README (with metadata)
@@ -44,5 +50,4 @@ jobs:
           git add -A
           git diff --cached --quiet && echo "No changes" && exit 0
           git commit -m "Deploy from GitHub: ${{ github.sha }}"
-          git push https://huggingface.co/spaces/${{ vars.HF_SPACE_ID || 'CaffeinatedCoding/ReportRaahat' }} main \
-            -c http.extraHeader="Authorization: Bearer $HF_TOKEN"
+          git push "$HF_URL" main
