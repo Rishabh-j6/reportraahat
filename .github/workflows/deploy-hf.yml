@@ -21,7 +21,7 @@ jobs:
           git config --global user.name "ReportRaahat CI"
 
           # Clone the HF Space repo (or create if doesn't exist)
-          git clone https://huggingface.co/spaces/${{ vars.HF_SPACE_ID || 'CaffeinatedCoding/reportraahat' }} hf-space \
+          git clone https://huggingface.co/spaces/${{ vars.HF_SPACE_ID || 'CaffeinatedCoding/ReportRaahat' }} hf-space \
             --depth 1 \
             -c http.extraHeader="Authorization: Bearer $HF_TOKEN" \
             || mkdir hf-space
@@ -44,5 +44,5 @@ jobs:
           git add -A
           git diff --cached --quiet && echo "No changes" && exit 0
           git commit -m "Deploy from GitHub: ${{ github.sha }}"
-          git push https://huggingface.co/spaces/${{ vars.HF_SPACE_ID || 'CaffeinatedCoding/reportraahat' }} main \
+          git push https://huggingface.co/spaces/${{ vars.HF_SPACE_ID || 'CaffeinatedCoding/ReportRaahat' }} main \
             -c http.extraHeader="Authorization: Bearer $HF_TOKEN"
