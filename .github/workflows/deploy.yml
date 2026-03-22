@@ -1,0 +1,67 @@
+name: Deploy to Hugging Face Spaces
+
+on:
+  push:
+    branches: [main]
+
+jobs:
+  # ── Backend → HF Spaces (Docker) ─────────────────────────────────────────
+  deploy-backend:
+    name: Deploy Backend to HF Spaces
+    runs-on: ubuntu-latest
+
+    steps:
+      - name: Checkout repository
+        uses: actions/checkout@v4
+        with:
+          fetch-depth: 0
+
+      - name: Set up Python
+        uses: actions/setup-python@v5
+        with:
+          python-version: "3.11"
+
+      - name: Install huggingface_hub
+        run: pip install "huggingface_hub>=0.23.0"
+
+      - name: Push backend to HF Spaces
+        env:
+          HF_TOKEN: ${{ secrets.HF_TOKEN }}
+          HF_SPACE_REPO: ${{ secrets.HF_SPACE_REPO }}
+        run: |
+          python - <<'PYEOF'
+          import os
+          from huggingface_hub import HfApi
+
+          token = os.environ["HF_TOKEN"]
+          space = os.environ["HF_SPACE_REPO"]   # e.g. CaffeinatedCoding/reportraahat
+          sha   = os.environ.get("GITHUB_SHA", "unknown")[:8]
+
+          api = HfApi(token=token)
+
+          # Upload entire backend/ folder to the root of the HF Space
+          api.upload_folder(
+              folder_path="backend",
+              repo_id=space,
+              repo_type="space",
+              commit_message=f"ci: deploy backend @ {sha}",
+              ignore_patterns=[
+                  "__pycache__/**",
+                  "**/__pycache__/**",
+                  "*.pyc",
+                  ".env",
+                  ".env.*",
+                  ".venv/**",
+                  ".venv-*/**",
+                  "*.egg-info/**",
+                  "test_*.py",
+                  "tests/**",
+              ],
+          )
+
+          print(f"✅ Backend deployed to https://huggingface.co/spaces/{space}")
+          PYEOF
+
+  # ── Frontend → Vercel (auto-deploys on push to main via Vercel GitHub integration)
+  # No extra step needed here — connect the repo to Vercel once in the Vercel dashboard.
+  # Set NEXT_PUBLIC_API_URL in Vercel project settings to your HF Space URL.

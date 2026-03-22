@@ -3,9 +3,13 @@ import { useCallback, useState, useEffect } from "react";
 import { useDropzone } from "react-dropzone";
 import { useRouter } from "next/navigation";
 import { motion, AnimatePresence } from "framer-motion";
+import { useGUCStore } from "@/lib/store";
+import { getNextMock } from "@/lib/mockData";
 
 export default function Home() {
   const router = useRouter();
+  const setLatestReport = useGUCStore((s) => s.setLatestReport);
+  const setProfile = useGUCStore((s) => s.setProfile);
   const [file, setFile] = useState<File | null>(null);
   const [language, setLanguage] = useState<"hindi" | "english">("hindi");
   const [loading, setLoading] = useState(false);
@@ -46,9 +50,46 @@ export default function Home() {
     maxFiles: 1,
   });
 
-  const handleAnalyze = () => {
+  const handleAnalyze = async () => {
+    if (!file) return;
     setLoading(true);
-    setTimeout(() => router.push("/dashboard"), 3200);
+
+    try {
+      // Read file as base64 data URL
+      const imageBase64 = await new Promise<string>((resolve, reject) => {
+        const reader = new FileReader();
+        reader.onload = () => resolve(reader.result as string);
+        reader.onerror = reject;
+        reader.readAsDataURL(file);
+      });
+
+      const lang = language === "hindi" ? "HI" : "EN";
+
+      const res = await fetch("/api/analyze-report", {
+        method: "POST",
+        headers: { "Content-Type": "application/json" },
+        body: JSON.stringify({ imageBase64, language: lang }),
+      });
+
+      if (res.ok) {
+        const data = await res.json();
+        if (data) {
+          // Save real report to store
+          setLatestReport(data);
+          // Set language preference
+          setProfile({ language: lang as "EN" | "HI" });
+        } else {
+          // Backend unavailable — use mock fallback
+          setLatestReport(getNextMock());
+        }
+      } else {
+        setLatestReport(getNextMock());
+      }
+    } catch {
+      setLatestReport(getNextMock());
+    }
+
+    router.push("/dashboard");
   };
 
   return (
@@ -187,7 +228,7 @@ export default function Home() {
         </div>
 
         {/* Samjho button */}
-        <motion.button onClick={handleAnalyze} disabled={loading}
+        <motion.button onClick={handleAnalyze} disabled={loading || !file}
           className="w-full py-4 rounded-2xl text-lg font-black text-white disabled:opacity-50"
           style={{ background: "linear-gradient(135deg, #FF9933, #e67300)" }}
           whileHover={{ scale: 1.02, boxShadow: "0 0 30px rgba(255,153,51,0.5)" }}

@@ -3,7 +3,7 @@ import { Inter } from "next/font/google"
 import Link from "next/link"
 import "./globals.css"
 import { NavLinks } from "@/components/NavLinks"
-import DoctorChat from "@/components/DoctorChat"
+import ChatProvider from "@/components/ChatProvider"
 import AvatarPanel from "@/components/AvatarPanel"
 
 const inter = Inter({ subsets: ["latin"] })
@@ -31,7 +31,7 @@ export default function RootLayout({ children }: { children: React.ReactNode }) 
 
         <main className="ml-56 min-h-screen">{children}</main>
 
-        <DoctorChat onSend={async (msg) => { return "Test response" }} />
+        <ChatProvider />
         <AvatarPanel />
       </body>
     </html>

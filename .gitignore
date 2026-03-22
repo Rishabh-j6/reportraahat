@@ -2,17 +2,23 @@
 __pycache__/
 *.py[cod]
 venv/
+.venv/
+.venv-*/
 .env
+.env.*
+!.env.example
 *.db
 *.faiss
 *.pt
 *.bin
+*.pkl
 
 # Node
 node_modules/
 .next/
 dist/
 .env.local
+.env.*.local
 package-lock.json
 yarn.lock
 
@@ -20,6 +26,14 @@ yarn.lock
 .vscode/
 .idea/
 .DS_Store
+Thumbs.db
 
-# Notebooks output
+# Notebooks
 notebooks/.ipynb_checkpoints/
+*.ipynb_checkpoints/
+
+# Large model files (stored on HF Hub, not in git)
+*.safetensors
+*.gguf
+*.onnx
+model_cache/

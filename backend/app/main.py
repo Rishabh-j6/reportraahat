@@ -1,6 +1,9 @@
 # main.py — FINAL MERGED VERSION
 # Member 4's CORS + routers + Member 1's lifespan ML preload
 
+from dotenv import load_dotenv
+load_dotenv()  # load .env before anything reads os.environ
+
 from fastapi import FastAPI
 from fastapi.middleware.cors import CORSMiddleware
 from contextlib import asynccontextmanager
@@ -12,12 +15,14 @@ from app.routers import analyze, chat, nutrition, exercise  # ← all 4 routers
 async def lifespan(app: FastAPI):
     print("Starting ReportRaahat backend...")
     try:
-        from app.ml.model import load_model
-        from app.ml.rag import load_nidaan_index, load_doctor_index
-        load_model()
-        load_nidaan_index()
-        load_doctor_index()
-        print("All ML models loaded.")
+        # Note: These functions are not yet implemented
+        # from app.ml.model import load_model
+        # from app.ml.rag import load_nidaan_index, load_doctor_index
+        # load_model()
+        # load_nidaan_index()
+        # load_doctor_index()
+        # print("All ML models loaded.")
+        print("Running in development mode (models not loaded)")
     except Exception as e:
         print(f"ML models not loaded (mock mode): {e}")
     yield
@@ -71,8 +76,4 @@ async def root():
 
 @app.get("/health")
 async def health():
-<<<<<<< HEAD
     return {"status": "healthy"}
-=======
-    return {"status": "healthy"}
->>>>>>> a8b61de3a0f89fd0ee578c57565031fc00e0f26b

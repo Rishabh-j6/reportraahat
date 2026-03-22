@@ -1,15 +1,39 @@
-// OWNER: Member 1 (ML Engineer)
-// POST /api/analyze-report
-// Accepts: { imageBase64: string, mimeType: string, language: string }
-// Returns: ReportData (see lib/store.ts for the type)
-// Logic:
-//   1. Forward to FastAPI POST /analyze
-//   2. FastAPI runs: OCR → FAISS retrieval → Flan-T5 simplification
-//   3. 8-second timeout → silent mock fallback (lib/mockData.ts)
-
 import { NextRequest, NextResponse } from "next/server"
 
+const API_BASE = process.env.NEXT_PUBLIC_API_URL ?? "http://localhost:8000"
+const TIMEOUT_MS = 8000
+
 export async function POST(req: NextRequest) {
-  // TODO Member 1: implement
-  return NextResponse.json({ message: "analyze-report route — Member 1" })
+  try {
+    const body = await req.json()
+    const { imageBase64, language = "EN" } = body
+
+    if (!imageBase64) {
+      return NextResponse.json({ error: "No image provided" }, { status: 400 })
+    }
+
+    const controller = new AbortController()
+    const timeout = setTimeout(() => controller.abort(), TIMEOUT_MS)
+
+    try {
+      const res = await fetch(`${API_BASE}/analyze/`, {
+        method: "POST",
+        headers: { "Content-Type": "application/json" },
+        body: JSON.stringify({ image_base64: imageBase64, language }),
+        signal: controller.signal,
+      })
+      clearTimeout(timeout)
+
+      if (!res.ok) throw new Error(`Backend returned ${res.status}`)
+
+      const data = await res.json()
+      return NextResponse.json(data)
+    } catch (err) {
+      clearTimeout(timeout)
+      throw err
+    }
+  } catch {
+    // Signal frontend to use mock fallback
+    return NextResponse.json(null, { status: 503 })
+  }
 }

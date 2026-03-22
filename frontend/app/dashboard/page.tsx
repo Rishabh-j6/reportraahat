@@ -6,7 +6,43 @@ import LabValuesTable from "@/components/LabValuesTable";
 import ConfidenceGauge from "@/components/ConfidenceGauge";
 import HealthChecklist from "@/components/HealthChecklist";
 import ShareButton from "@/components/ShareButton";
+import { useGUCStore } from "@/lib/store";
+import type { LabFinding, OrganFlag } from "@/lib/store";
 
+// ── helpers ──────────────────────────────────────────────────────────────────
+
+/** Parse "9.2 g/dL" or "9.2" → { value: 9.2, unit: "g/dL" } */
+function parseValueUnit(raw: string): { value: number; unit: string } {
+  const m = raw.match(/^([0-9,]+\.?[0-9]*)\s*(.*)$/);
+  if (m) return { value: parseFloat(m[1].replace(",", "")), unit: m[2].trim() };
+  return { value: parseFloat(raw) || 0, unit: "" };
+}
+
+function findingsToTableRows(findings: LabFinding[]) {
+  return findings.map((f) => {
+    const { value, unit } = parseValueUnit(f.value);
+    const status = f.status === "CRITICAL" ? "HIGH" : (f.status as "HIGH" | "LOW" | "NORMAL");
+    return {
+      name: f.simple_name_english || f.parameter,
+      nameHi: f.simple_name_hindi || f.parameter,
+      value,
+      unit,
+      status,
+    };
+  });
+}
+
+function organsToFlags(organs: OrganFlag[]) {
+  const set = new Set(organs.map((o) => o.toUpperCase()));
+  return {
+    liver:  set.has("LIVER"),
+    heart:  set.has("HEART"),
+    kidney: set.has("KIDNEY"),
+    lungs:  set.has("LUNGS"),
+  };
+}
+
+// ── fallback MOCK (shown only when no report has been uploaded yet) ───────────
 const MOCK = {
   patientName: "Ramesh Kumar",
   confidenceScore: 96,
@@ -47,6 +83,11 @@ const CARD: React.CSSProperties = {
 };
 
 export default function Dashboard() {
+  const latestReport     = useGUCStore((s) => s.latestReport);
+  const profile          = useGUCStore((s) => s.profile);
+  const checklistProgress = useGUCStore((s) => s.checklistProgress);
+  const addXP            = useGUCStore((s) => s.addXP);
+
   const [speaking, setSpeaking] = useState(false);
   const [xp, setXp] = useState(0);
   const [showXPBurst, setShowXPBurst] = useState(false);
@@ -57,18 +98,41 @@ export default function Dashboard() {
     setTimeout(() => setShowConfetti(false), 2500);
   }, []);
 
+  // ── derive display data from report or fall back to MOCK ─────────────────
+  const hasReport = !!latestReport;
+
+  const patientName      = hasReport ? profile.name : MOCK.patientName;
+  const confidenceScore  = hasReport ? latestReport.ai_confidence_score : MOCK.confidenceScore;
+  const simplifiedText   = hasReport ? latestReport.overall_summary_hindi   : MOCK.simplifiedText;
+  const simplifiedTextEn = hasReport ? latestReport.overall_summary_english  : MOCK.simplifiedTextEn;
+  const organFlags       = hasReport ? organsToFlags(latestReport.affected_organs) : MOCK.organFlags;
+  const labValues        = hasReport ? findingsToTableRows(latestReport.findings) : MOCK.labValues;
+
+  const checklist = hasReport && checklistProgress.length > 0
+    ? checklistProgress.map((i) => i.label)
+    : MOCK.checklist;
+
+  // Original text: use English summary or MOCK text
+  const originalText = hasReport
+    ? latestReport.overall_summary_english
+    : MOCK.originalText;
+
+  // Jargon map only makes sense with MOCK for now
+  const jargonMap = hasReport ? {} : MOCK.jargonMap;
+
   const handleListen = () => {
     if (!window.speechSynthesis) return;
     if (speaking) { window.speechSynthesis.cancel(); setSpeaking(false); return; }
-    const u = new SpeechSynthesisUtterance(MOCK.simplifiedText);
+    const u = new SpeechSynthesisUtterance(simplifiedText);
     u.lang = "hi-IN"; u.rate = 0.85;
     u.onstart = () => setSpeaking(true);
     u.onend = () => setSpeaking(false);
     window.speechSynthesis.speak(u);
   };
 
-  const addXP = (amount: number) => {
+  const handleXP = (amount: number) => {
     setXp((p) => p + amount);
+    addXP(amount);
     setShowXPBurst(true);
     setTimeout(() => setShowXPBurst(false), 1000);
   };
@@ -95,7 +159,7 @@ export default function Dashboard() {
         style={{ background:"rgba(13,27,46,0.92)", backdropFilter:"blur(12px)", borderBottom:"1px solid #1e2d45" }}>
         <div>
           <h1 className="text-xl font-black text-white">Report<span style={{color:"#FF9933"}}>Raahat</span></h1>
-          <p className="text-slate-400 text-xs">नमस्ते, {MOCK.patientName} 🙏</p>
+          <p className="text-slate-400 text-xs">नमस्ते, {patientName} 🙏</p>
         </div>
         <div className="flex items-center gap-3">
           <motion.div className="flex items-center gap-1.5 px-4 py-2 rounded-full font-bold text-sm"
@@ -112,16 +176,26 @@ export default function Dashboard() {
         </div>
       </div>
 
+      {/* Report source badge */}
+      {hasReport && (
+        <div className="max-w-6xl mx-auto px-5 pt-3">
+          <span className="inline-flex items-center gap-1.5 text-xs px-3 py-1 rounded-full"
+            style={{ background: "rgba(34,197,94,0.12)", border: "1px solid rgba(34,197,94,0.3)", color: "#22C55E" }}>
+            ✓ Showing analysis from your uploaded report · {latestReport?.report_type ?? "LAB_REPORT"}
+          </span>
+        </div>
+      )}
+
       {/* 2-col grid */}
       <div className="max-w-6xl mx-auto p-5 grid grid-cols-1 md:grid-cols-2 gap-4">
 
-        {/* Card 1 — Original */}
+        {/* Card 1 — Original / Summary */}
         <motion.div custom={0} variants={cardVariants} initial="hidden" animate="visible" style={CARD}>
           <p className="text-xs font-bold uppercase tracking-widest mb-4" style={{color:"#FF9933"}}>📄 Original Report</p>
           <p className="text-slate-300 text-sm leading-relaxed">
-            {MOCK.originalText.split(" ").map((word, i) => {
+            {originalText.split(" ").map((word, i) => {
               const lower = word.toLowerCase().replace(/[^a-z]/g,"");
-              const meaning = (MOCK.jargonMap as any)[lower];
+              const meaning = (jargonMap as Record<string, string>)[lower];
               return meaning ? (
                 <span key={i} className="relative group cursor-help inline-block mx-0.5">
                   <span className="px-2 py-0.5 rounded-md text-sm font-semibold"
@@ -136,15 +210,15 @@ export default function Dashboard() {
               ) : <span key={i}>{word} </span>;
             })}
           </p>
-          <p className="text-slate-600 text-xs mt-4">🟠 Highlighted words = medical jargon (hover for meaning)</p>
+          {!hasReport && <p className="text-slate-600 text-xs mt-4">🟠 Highlighted words = medical jargon (hover for meaning)</p>}
         </motion.div>
 
         {/* Card 2 — Explanation */}
         <motion.div custom={1} variants={cardVariants} initial="hidden" animate="visible"
           style={{...CARD, border:"1px solid rgba(255,153,51,0.3)"}}>
           <p className="text-xs font-bold uppercase tracking-widest mb-4" style={{color:"#22C55E"}}>💬 आसान भाषा में (Simple Explanation)</p>
-          <p className="text-white text-lg leading-relaxed font-semibold mb-3">{MOCK.simplifiedText}</p>
-          <p className="text-slate-400 text-sm leading-relaxed mb-5">{MOCK.simplifiedTextEn}</p>
+          <p className="text-white text-lg leading-relaxed font-semibold mb-3">{simplifiedText}</p>
+          <p className="text-slate-400 text-sm leading-relaxed mb-5">{simplifiedTextEn}</p>
           <motion.button onClick={handleListen}
             className="flex items-center gap-2 px-5 py-2.5 rounded-xl text-sm font-bold text-white"
             style={{background:"linear-gradient(135deg,#FF9933,#e67300)"}}
@@ -156,33 +230,33 @@ export default function Dashboard() {
         {/* Card 3 — Body Map */}
         <motion.div custom={2} variants={cardVariants} initial="hidden" animate="visible" style={CARD}>
           <p className="text-xs font-bold uppercase tracking-widest mb-3" style={{color:"#FF9933"}}>🫀 Affected Body Part</p>
-          <BodyMap organFlags={MOCK.organFlags} />
+          <BodyMap organFlags={organFlags} />
         </motion.div>
 
         {/* Card 4 — Lab Values */}
         <motion.div custom={3} variants={cardVariants} initial="hidden" animate="visible" style={CARD}>
           <p className="text-xs font-bold uppercase tracking-widest mb-3" style={{color:"#22C55E"}}>🧪 Lab Values</p>
-          <LabValuesTable values={MOCK.labValues} />
+          <LabValuesTable values={labValues} />
         </motion.div>
 
         {/* Card 5 — Confidence */}
         <motion.div custom={4} variants={cardVariants} initial="hidden" animate="visible"
           className="flex flex-col items-center justify-center" style={CARD}>
           <p className="text-xs font-bold uppercase tracking-widest mb-6" style={{color:"#FF9933"}}>🎯 AI Confidence</p>
-          <ConfidenceGauge score={MOCK.confidenceScore} />
+          <ConfidenceGauge score={confidenceScore} />
         </motion.div>
 
         {/* Card 6 — Checklist */}
         <motion.div custom={5} variants={cardVariants} initial="hidden" animate="visible" style={CARD}>
           <p className="text-xs font-bold uppercase tracking-widest mb-4" style={{color:"#22C55E"}}>✅ अगले कदम (Next Steps)</p>
-          <HealthChecklist items={MOCK.checklist} onXP={addXP} />
+          <HealthChecklist items={checklist} onXP={handleXP} />
         </motion.div>
 
         {/* Card 7 — Share (full width) */}
         <motion.div custom={6} variants={cardVariants} initial="hidden" animate="visible"
           className="md:col-span-2 flex flex-col items-center gap-4" style={CARD}>
           <p className="text-xs font-bold uppercase tracking-widest" style={{color:"#FF9933"}}>📱 Share with Family</p>
-          <ShareButton summary={MOCK.simplifiedText} onXP={addXP} />
+          <ShareButton summary={simplifiedText} onXP={handleXP} />
         </motion.div>
 
       </div>
