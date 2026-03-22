@@ -71,15 +71,33 @@ export default function ExercisePage() {
   const severity = latestReport?.severity_level ?? "MILD_CONCERN";
 
   useEffect(() => {
+    const TIER_MAP: Record<string, string> = {
+      Beginner: "LIGHT_WALKING_ONLY",
+      Intermediate: "NORMAL_ACTIVITY",
+      Advanced: "ACTIVE_ENCOURAGED",
+    };
+
     const fetchPlan = async () => {
       try {
         setLoading(true);
-        const res = await fetch(
-          `${API_BASE}/exercise?exercise_flags=${exerciseLevel}&severity_level=${severity}&language=${profile.language}`
-        );
+        // Backend expects POST /exercise/ with empty body (stub)
+        const res = await fetch(`${API_BASE}/exercise/`, {
+          method: "POST",
+          headers: { "Content-Type": "application/json" },
+          body: JSON.stringify({}),
+        });
         if (!res.ok) throw new Error();
-        const json: ExerciseResponse = await res.json();
-        setData(json);
+        const json = await res.json();
+
+        // Transform backend ExerciseResponse → frontend ExerciseResponse
+        const transformed: ExerciseResponse = {
+          tier: TIER_MAP[json.tier] ?? json.tier ?? "NORMAL_ACTIVITY",
+          tier_description: json.tier_reason ?? json.tier_description ?? "",
+          weekly_plan: json.weekly_plan ?? [],
+          general_advice: json.encouragement ?? json.general_advice ?? "",
+          avoid: json.restrictions ?? json.avoid ?? [],
+        };
+        setData(transformed);
         setSelectedDay("Monday");
       } catch {
         setData(FALLBACK_PLAN);

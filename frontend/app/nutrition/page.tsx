@@ -94,18 +94,67 @@ export default function NutritionPage() {
       try {
         setLoading(true);
         setError(false);
-        const res = await fetch(
-          `${API_BASE}/nutrition?dietary_flags=${flags}&language=${profile.language}`
-        );
+
+        // Backend expects POST /nutrition/ with NutritionRequest JSON body
+        const res = await fetch(`${API_BASE}/nutrition/`, {
+          method: "POST",
+          headers: { "Content-Type": "application/json" },
+          body: JSON.stringify({
+            dietary_flags: nutritionProfile.deficiencies.length > 0
+              ? nutritionProfile.deficiencies
+              : ["INCREASE_IRON"],
+            allergy_flags: [],
+            vegetarian: true,
+          }),
+        });
         if (!res.ok) throw new Error("API error");
-        const json: NutritionResponse = await res.json();
-        setData(json);
+        const json = await res.json();
+
+        // Transform backend FoodItem → frontend FoodItem shape
+        const transformed: NutritionResponse = {
+          recommended_foods: (json.recommended_foods ?? []).map((f: Record<string, unknown>) => ({
+            name_english: f.food_name ?? "",
+            name_hindi: f.food_name_hindi ?? "",
+            food_group: f.food_group ?? "",
+            serving_suggestion: f.serving_suggestion ?? "",
+            nutrient_highlights: {
+              protein_g: (f.protein_g as number) ?? 0,
+              iron_mg: (f.iron_mg as number) ?? 0,
+              calcium_mg: (f.calcium_mg as number) ?? 0,
+              vitaminD_iu: (f.vitamin_d_mcg as number) ?? 0,
+              fiber_g: (f.fibre_g as number) ?? 0,
+              calories_kcal: (f.energy_kcal as number) ?? 0,
+            },
+          })),
+          daily_targets: json.daily_targets ?? {},
+          deficiency_summary: (json.deficiencies ?? []).join(" · "),
+        };
+        setData(transformed);
       } catch {
         try {
           const res = await fetch(`${API_BASE}/nutrition/fallback`);
           if (!res.ok) throw new Error();
-          const json: NutritionResponse = await res.json();
-          setData(json);
+          const json = await res.json();
+
+          const transformed: NutritionResponse = {
+            recommended_foods: (json.recommended_foods ?? []).map((f: Record<string, unknown>) => ({
+              name_english: f.food_name ?? "",
+              name_hindi: f.food_name_hindi ?? "",
+              food_group: f.food_group ?? "",
+              serving_suggestion: f.serving_suggestion ?? "",
+              nutrient_highlights: {
+                protein_g: (f.protein_g as number) ?? 0,
+                iron_mg: (f.iron_mg as number) ?? 0,
+                calcium_mg: (f.calcium_mg as number) ?? 0,
+                vitaminD_iu: (f.vitamin_d_mcg as number) ?? 0,
+                fiber_g: (f.fibre_g as number) ?? 0,
+                calories_kcal: (f.energy_kcal as number) ?? 0,
+              },
+            })),
+            daily_targets: json.daily_targets ?? {},
+            deficiency_summary: (json.deficiencies ?? []).join(" · "),
+          };
+          setData(transformed);
         } catch {
           setError(true);
         }
@@ -114,7 +163,7 @@ export default function NutritionPage() {
       }
     };
     fetchNutrition();
-  }, [flags, API_BASE, profile.language]);
+  }, [flags, API_BASE, profile.language, nutritionProfile.deficiencies]);
 
   const handleAddToToday = (food: FoodItem) => {
     logFood(food.name_english);
