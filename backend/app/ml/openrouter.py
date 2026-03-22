@@ -11,9 +11,9 @@ BASE_URL = "https://openrouter.ai/api/v1"
 
 # Free models available on OpenRouter — fallback chain
 MODELS = [
-    "stepfun/step-3.5-flash:free",
-    "nvidia/nemotron-3-super-120b-a12b:free",
-    "arcee-ai/trinity-large-preview:free",
+    "deepseek/deepseek-chat-v3-0324:free",
+    "google/gemma-3-27b-it:free",
+    "meta-llama/llama-4-maverick:free",
 ]
 
 
@@ -59,7 +59,6 @@ def build_system_prompt(guc: dict) -> str:
         else "Always respond in simple English."
     )
 
-    # Add empathy instruction if stress is high
     empathy_note = (
         "\nNOTE: This patient has high stress levels. "
         "Be extra gentle, reassuring and empathetic in your responses. "
@@ -103,8 +102,52 @@ IMPORTANT RULES:
     return prompt
 
 
-# Enhanced mock responses moved to app/ml/enhanced_chat.py
-# See get_enhanced_mock_response() for detailed contextual responses
+def _call_openrouter(messages: list[dict]) -> str | None:
+    """
+    Call OpenRouter API with the given messages.
+    Tries each model in MODELS until one succeeds.
+    Returns the reply string, or None on failure.
+    """
+    if not OPENROUTER_API_KEY or OPENROUTER_API_KEY.startswith("placeholder"):
+        return None
+
+    headers = {
+        "Authorization": f"Bearer {OPENROUTER_API_KEY}",
+        "Content-Type": "application/json",
+        "HTTP-Referer": "https://reportraahat.app",
+        "X-Title": "ReportRaahat",
+    }
+
+    for model in MODELS:
+        try:
+            payload = {
+                "model": model,
+                "messages": messages,
+                "max_tokens": 500,
+                "temperature": 0.7,
+            }
+
+            with httpx.Client(timeout=30.0) as client:
+                resp = client.post(
+                    f"{BASE_URL}/chat/completions",
+                    headers=headers,
+                    json=payload,
+                )
+
+            if resp.status_code == 200:
+                data = resp.json()
+                reply = data["choices"][0]["message"]["content"]
+                print(f"✅ OpenRouter reply via {model}: {len(reply)} chars")
+                return reply.strip()
+            else:
+                print(f"⚠️ OpenRouter {model} returned {resp.status_code}: {resp.text[:200]}")
+                continue
+
+        except Exception as e:
+            print(f"⚠️ OpenRouter {model} error: {e}")
+            continue
+
+    return None
 
 
 def chat(
@@ -115,19 +158,43 @@ def chat(
     """
     Send a message to Dr. Raahat via OpenRouter.
     Injects GUC context + RAG-retrieved knowledge.
-    Falls back to enhanced mock responses for testing.
+    Falls back to enhanced mock responses if API fails.
     """
-    retrieved_docs = []
-    
-    # Try to retrieve relevant medical documents from RAG
+    # Build system prompt with full GUC context
+    system_prompt = build_system_prompt(guc)
+
+    # Build conversation messages
+    messages = [{"role": "system", "content": system_prompt}]
+
+    # Add RAG-retrieved context if available
     try:
-        if rag_retriever and rag_retriever.loaded:
-            # Create embedding for the user's message (simplified for now)
-            # In production, use proper embeddings model
-            query_embedding = [0.1] * 768  # Placeholder - replace with real embeddings
-            retrieved_docs = rag_retriever.retrieve(query_embedding, k=3)
+        if retrieve_doctor_context:
+            docs = retrieve_doctor_context(message, top_k=3)
+            if docs:
+                context = "\n".join(f"- {d['text']}" for d in docs)
+                messages.append({
+                    "role": "system",
+                    "content": f"Relevant medical knowledge:\n{context}"
+                })
     except Exception as e:
-        print(f"⚠️  RAG retrieval failed: {e}")
-    
-    # Use enhanced mock responses with RAG grounding
+        print(f"⚠️ RAG retrieval failed: {e}")
+
+    # Add chat history
+    for msg in history[-10:]:  # Last 10 messages for context
+        role = msg.get("role", "user")
+        content = msg.get("content", msg.get("text", ""))
+        if content:
+            messages.append({"role": role, "content": content})
+
+    # Add current message
+    messages.append({"role": "user", "content": message})
+
+    # Try OpenRouter API first
+    reply = _call_openrouter(messages)
+    if reply:
+        return reply
+
+    # Fallback to enhanced mock responses
+    print("⚠️ OpenRouter unavailable, using mock responses")
+    retrieved_docs = []
     return get_enhanced_mock_response(message, guc, retrieved_docs)

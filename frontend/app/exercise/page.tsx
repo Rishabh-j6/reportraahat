@@ -67,7 +67,7 @@ export default function ExercisePage() {
   const [selectedDay, setSelectedDay]     = useState<string | null>(null);
   const [completedDays, setCompletedDays] = useState<Set<string>>(new Set());
 
-  const API_BASE = process.env.NEXT_PUBLIC_API_URL ?? "http://localhost:8000";
+
   const severity = latestReport?.severity_level ?? "MILD_CONCERN";
 
   useEffect(() => {
@@ -80,8 +80,8 @@ export default function ExercisePage() {
     const fetchPlan = async () => {
       try {
         setLoading(true);
-        // Backend expects POST /exercise/ with empty body (stub)
-        const res = await fetch(`${API_BASE}/exercise/`, {
+        // Call Next.js API route which proxies to backend
+        const res = await fetch(`/api/exercise`, {
           method: "POST",
           headers: { "Content-Type": "application/json" },
           body: JSON.stringify({}),
@@ -107,7 +107,7 @@ export default function ExercisePage() {
       }
     };
     fetchPlan();
-  }, [exerciseLevel, severity, API_BASE, profile.language]);
+  }, [exerciseLevel, severity, profile.language]);
 
   const handleComplete = (day: string) => {
     if (completedDays.has(day)) return;

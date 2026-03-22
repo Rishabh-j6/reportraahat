@@ -82,7 +82,6 @@ export default function NutritionPage() {
   const [loggedToday, setLoggedToday] = useState<string[]>([]);
   const [activeCard, setActiveCard]   = useState<string | null>(null);
 
-  const API_BASE = process.env.NEXT_PUBLIC_API_URL ?? "http://localhost:8000";
   const flags    = nutritionProfile.deficiencies.join(",") || "INCREASE_IRON";
 
   useEffect(() => {
@@ -95,8 +94,8 @@ export default function NutritionPage() {
         setLoading(true);
         setError(false);
 
-        // Backend expects POST /nutrition/ with NutritionRequest JSON body
-        const res = await fetch(`${API_BASE}/nutrition/`, {
+        // Call Next.js API route which proxies to backend
+        const res = await fetch(`/api/nutrition`, {
           method: "POST",
           headers: { "Content-Type": "application/json" },
           body: JSON.stringify({
@@ -132,7 +131,11 @@ export default function NutritionPage() {
         setData(transformed);
       } catch {
         try {
-          const res = await fetch(`${API_BASE}/nutrition/fallback`);
+          const res = await fetch(`/api/nutrition`, {
+            method: "POST",
+            headers: { "Content-Type": "application/json" },
+            body: JSON.stringify({ dietary_flags: ["INCREASE_IRON"], vegetarian: true }),
+          });
           if (!res.ok) throw new Error();
           const json = await res.json();
 
@@ -163,7 +166,7 @@ export default function NutritionPage() {
       }
     };
     fetchNutrition();
-  }, [flags, API_BASE, profile.language, nutritionProfile.deficiencies]);
+  }, [flags, profile.language, nutritionProfile.deficiencies]);
 
   const handleAddToToday = (food: FoodItem) => {
     logFood(food.name_english);
