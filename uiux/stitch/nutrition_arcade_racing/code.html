@@ -1,0 +1,253 @@
+<!DOCTYPE html>
+
+<html class="dark" lang="en"><head>
+<meta charset="utf-8"/>
+<meta content="width=device-width, initial-scale=1.0" name="viewport"/>
+<title>VANGARD Nutrition Arcade</title>
+<script src="https://cdn.tailwindcss.com?plugins=forms,container-queries"></script>
+<link href="https://fonts.googleapis.com/css2?family=Plus+Jakarta+Sans:ital,wght@0,200..800;1,200..800&amp;family=Be+Vietnam+Pro:wght@100..900&amp;family=Noto+Sans+Devanagari:wght@100..900&amp;family=Material+Symbols+Outlined:wght,FILL@100..700,0..1&amp;display=swap" rel="stylesheet"/>
+<link href="https://fonts.googleapis.com/css2?family=Material+Symbols+Outlined:wght,FILL@100..700,0..1&amp;display=swap" rel="stylesheet"/>
+<script id="tailwind-config">
+        tailwind.config = {
+            darkMode: "class",
+            theme: {
+                extend: {
+                    colors: {
+                        "surface-container-high": "#292937",
+                        "surface-bright": "#383847",
+                        "on-error-container": "#ffdad6",
+                        "surface-dim": "#12121f",
+                        "surface": "#12121f",
+                        "on-secondary-container": "#b0b2ff",
+                        "surface-variant": "#343342",
+                        "error": "#ffb4ab",
+                        "surface-container": "#1e1e2c",
+                        "secondary": "#c0c1ff",
+                        "inverse-primary": "#8f4e00",
+                        "error-container": "#93000a",
+                        "surface-tint": "#ffb77a",
+                        "surface-container-highest": "#343342",
+                        "on-surface-variant": "#dbc2b0",
+                        "on-secondary": "#1000a9",
+                        "primary-fixed": "#ffdcc2",
+                        "tertiary": "#52e87c",
+                        "surface-container-lowest": "#0d0d1a",
+                        "secondary-fixed-dim": "#c0c1ff",
+                        "secondary-fixed": "#e1e0ff",
+                        "tertiary-container": "#2ccb63",
+                        "on-primary-fixed": "#2e1500",
+                        "on-background": "#e3e0f4",
+                        "primary-fixed-dim": "#ffb77a",
+                        "tertiary-fixed": "#6bff8f",
+                        "on-tertiary-fixed-variant": "#005321",
+                        "on-tertiary-container": "#005020",
+                        "on-tertiary-fixed": "#002109",
+                        "tertiary-fixed-dim": "#4ae176",
+                        "on-primary-container": "#693800",
+                        "inverse-surface": "#e3e0f4",
+                        "inverse-on-surface": "#2f2f3d",
+                        "primary": "#ffc08d",
+                        "outline": "#a38d7c",
+                        "on-primary-fixed-variant": "#6d3a00",
+                        "on-secondary-fixed-variant": "#2f2ebe",
+                        "on-tertiary": "#003915",
+                        "on-error": "#690005",
+                        "surface-container-low": "#1a1a28",
+                        "secondary-container": "#3131c0",
+                        "on-secondary-fixed": "#07006c",
+                        "on-primary": "#4c2700",
+                        "background": "#12121f",
+                        "primary-container": "#ff9933",
+                        "on-surface": "#e3e0f4",
+                        "outline-variant": "#554336"
+                    },
+                    fontFamily: {
+                        "headline": ["Plus Jakarta Sans"],
+                        "body": ["Be Vietnam Pro"],
+                        "label": ["Be Vietnam Pro"],
+                        "hindi": ["Noto Sans Devanagari"]
+                    },
+                    borderRadius: {"DEFAULT": "1rem", "lg": "2rem", "xl": "3rem", "full": "9999px"},
+                },
+            },
+        }
+    </script>
+<style>
+        .material-symbols-outlined {
+            font-variation-settings: 'FILL' 0, 'wght' 400, 'GRAD' 0, 'opsz' 24;
+            display: inline-block;
+            line-height: 1;
+        }
+        .clay-surface {
+            box-shadow: inset 0 1px 1px 0 rgba(255,255,255,0.05);
+        }
+        .starfield {
+            background-image: radial-gradient(circle at 2px 2px, rgba(255,255,255,0.05) 1px, transparent 0);
+            background-size: 24px 24px;
+        }
+        .radar-grid {
+            clip-path: polygon(50% 0%, 100% 38%, 82% 100%, 18% 100%, 0% 38%);
+        }
+    </style>
+</head>
+<body class="bg-surface-dim text-on-background font-body starfield selection:bg-primary/30">
+<!-- TopAppBar -->
+<nav class="fixed top-0 w-full z-50 flex justify-between items-center px-6 py-4 bg-sky-400/70 dark:bg-slate-900/70 backdrop-blur-xl rounded-b-[3rem] shadow-[inset_0_1px_0_0_rgba(255,255,255,0.1)]">
+<div class="flex flex-col">
+<span class="text-2xl font-black italic tracking-tighter text-orange-500 dark:text-orange-400">VANGARD</span>
+<span class="font-headline text-[10px] font-bold tracking-[0.2em] text-orange-600/80 uppercase">Fuel Station</span>
+</div>
+<div class="hidden md:flex gap-8 items-center">
+<a class="font-headline text-sm font-bold tracking-tight text-slate-700 dark:text-slate-300 hover:scale-105 transition-transform" href="#">Garage</a>
+<a class="font-headline text-sm font-bold tracking-tight text-slate-700 dark:text-slate-300 hover:scale-105 transition-transform" href="#">Stats</a>
+<a class="font-headline text-sm font-bold tracking-tight text-slate-700 dark:text-slate-300 hover:scale-105 transition-transform" href="#">Race</a>
+<a class="font-headline text-sm font-bold tracking-tight text-orange-600 dark:text-orange-300 hover:scale-105 transition-transform" href="#">Fuel</a>
+<a class="font-headline text-sm font-bold tracking-tight text-slate-700 dark:text-slate-300 hover:scale-105 transition-transform" href="#">Driver</a>
+</div>
+<div class="flex gap-4">
+<button class="material-symbols-outlined text-orange-500 dark:text-orange-400 p-2 bg-surface-container/50 rounded-full active:scale-95 transition-all">military_tech</button>
+<button class="material-symbols-outlined text-orange-500 dark:text-orange-400 p-2 bg-surface-container/50 rounded-full active:scale-95 transition-all">bolt</button>
+</div>
+</nav>
+<main class="pt-28 pb-32 px-6 max-w-7xl mx-auto space-y-12">
+<!-- Header Section -->
+<header class="text-center space-y-2">
+<h1 class="text-4xl md:text-6xl font-headline font-black tracking-tighter text-on-surface">Fuel Station</h1>
+<p class="text-primary font-headline text-lg tracking-widest uppercase font-bold">Indian Food Database</p>
+</header>
+<!-- Centerpiece: Fuel Composition Radar -->
+<section class="relative aspect-square max-w-md mx-auto flex items-center justify-center">
+<!-- Background Polygons -->
+<div class="absolute inset-0 border border-outline-variant/20 radar-grid scale-100 opacity-20"></div>
+<div class="absolute inset-0 border border-outline-variant/30 radar-grid scale-75 opacity-40"></div>
+<div class="absolute inset-0 border border-outline-variant/40 radar-grid scale-50 opacity-60"></div>
+<!-- Active Data Layer -->
+<div class="absolute inset-0 radar-grid bg-primary/20 backdrop-blur-sm border-2 border-primary/50" style="clip-path: polygon(50% 15%, 85% 45%, 70% 85%, 30% 90%, 15% 40%);"></div>
+<!-- Labels -->
+<div class="absolute top-0 transform -translate-y-8 font-headline font-black text-xs text-primary-fixed tracking-widest">PROTEIN</div>
+<div class="absolute top-1/3 -right-12 font-headline font-black text-xs text-primary-fixed tracking-widest">IRON</div>
+<div class="absolute bottom-4 -right-4 font-headline font-black text-xs text-primary-fixed tracking-widest">CALCIUM</div>
+<div class="absolute bottom-4 -left-4 font-headline font-black text-xs text-primary-fixed tracking-widest">FIBRE</div>
+<div class="absolute top-1/3 -left-12 font-headline font-black text-xs text-primary-fixed tracking-widest">ENERGY</div>
+<div class="z-10 text-center">
+<span class="text-4xl font-black font-headline text-primary-container">84%</span>
+<p class="text-[10px] font-black uppercase tracking-widest text-on-surface-variant">Tank Quality</p>
+</div>
+</section>
+<!-- Food Groups Grid -->
+<div class="grid grid-cols-1 md:grid-cols-3 gap-6">
+<!-- Veggies Cell -->
+<div class="bg-surface-container clay-surface rounded-xl p-6 flex flex-col gap-4 group hover:bg-surface-container-high transition-all border-l-4 border-tertiary">
+<div class="flex justify-between items-start">
+<div class="w-16 h-16 bg-tertiary-container/20 border-2 border-tertiary flex items-center justify-center rounded-lg overflow-hidden">
+<span class="material-symbols-outlined text-tertiary text-3xl" data-icon="eco">eco</span>
+</div>
+<div class="text-right">
+<h3 class="font-headline font-black text-xl text-on-surface uppercase">Palak Paneer</h3>
+<p class="font-hindi text-lg text-on-surface-variant">पालक पनीर</p>
+</div>
+</div>
+<div class="flex flex-wrap gap-2 py-2">
+<span class="bg-surface-container-lowest px-3 py-1 rounded-full text-[10px] font-black tracking-widest text-tertiary uppercase">High Iron</span>
+<span class="bg-surface-container-lowest px-3 py-1 rounded-full text-[10px] font-black tracking-widest text-tertiary uppercase">Low Carb</span>
+</div>
+<button class="w-full mt-2 py-4 bg-gradient-to-r from-tertiary-container to-tertiary text-on-tertiary-container font-headline font-black text-xs tracking-widest uppercase rounded-xl flex items-center justify-center gap-2 active:scale-95 transition-transform shadow-[0_4px_20px_rgba(82,232,124,0.3)]">
+                    Add to Tank <span class="opacity-70">·</span> +15 XP
+                </button>
+</div>
+<!-- Grains Cell -->
+<div class="bg-surface-container clay-surface rounded-xl p-6 flex flex-col gap-4 group hover:bg-surface-container-high transition-all border-l-4 border-primary">
+<div class="flex justify-between items-start">
+<div class="w-16 h-16 bg-primary-container/20 border-2 border-primary flex items-center justify-center rounded-lg overflow-hidden">
+<span class="material-symbols-outlined text-primary text-3xl" data-icon="bakery_dining">bakery_dining</span>
+</div>
+<div class="text-right">
+<h3 class="font-headline font-black text-xl text-on-surface uppercase">Bajra Roti</h3>
+<p class="font-hindi text-lg text-on-surface-variant">बाजरा रोटी</p>
+</div>
+</div>
+<div class="flex flex-wrap gap-2 py-2">
+<span class="bg-surface-container-lowest px-3 py-1 rounded-full text-[10px] font-black tracking-widest text-primary uppercase">Complex Carb</span>
+<span class="bg-surface-container-lowest px-3 py-1 rounded-full text-[10px] font-black tracking-widest text-primary uppercase">Gluten Free</span>
+</div>
+<button class="w-full mt-2 py-4 bg-gradient-to-r from-primary-container to-primary text-on-primary-container font-headline font-black text-xs tracking-widest uppercase rounded-xl flex items-center justify-center gap-2 active:scale-95 transition-transform shadow-[0_4px_20px_rgba(255,153,51,0.3)]">
+                    Add to Tank <span class="opacity-70">·</span> +15 XP
+                </button>
+</div>
+<!-- Fruits/Dairy Cell -->
+<div class="bg-surface-container clay-surface rounded-xl p-6 flex flex-col gap-4 group hover:bg-surface-container-high transition-all border-l-4 border-secondary">
+<div class="flex justify-between items-start">
+<div class="w-16 h-16 bg-secondary-container/20 border-2 border-secondary flex items-center justify-center rounded-lg overflow-hidden">
+<span class="material-symbols-outlined text-secondary text-3xl" data-icon="icecream">icecream</span>
+</div>
+<div class="text-right">
+<h3 class="font-headline font-black text-xl text-on-surface uppercase">Aamras</h3>
+<p class="font-hindi text-lg text-on-surface-variant">आमरस</p>
+</div>
+</div>
+<div class="flex flex-wrap gap-2 py-2">
+<span class="bg-surface-container-lowest px-3 py-1 rounded-full text-[10px] font-black tracking-widest text-secondary uppercase">Vitamin A</span>
+<span class="bg-surface-container-lowest px-3 py-1 rounded-full text-[10px] font-black tracking-widest text-secondary uppercase">Quick Fuel</span>
+</div>
+<button class="w-full mt-2 py-4 bg-gradient-to-r from-secondary-container to-secondary text-on-secondary-container font-headline font-black text-xs tracking-widest uppercase rounded-xl flex items-center justify-center gap-2 active:scale-95 transition-transform shadow-[0_4px_20px_rgba(49,49,192,0.3)]">
+                    Add to Tank <span class="opacity-70">·</span> +15 XP
+                </button>
+</div>
+<!-- Additional Cell for Asymmetry -->
+<div class="md:col-span-2 bg-surface-container-highest clay-surface rounded-xl p-8 flex items-center justify-between border-2 border-dashed border-outline-variant/30">
+<div class="space-y-2">
+<h4 class="font-headline font-black text-2xl text-primary">Need More Fuel?</h4>
+<p class="text-on-surface-variant body-md max-w-sm">Scan your meal receipt to unlock 8-bit regional specialties and triple your XP output.</p>
+</div>
+<button class="bg-surface-bright p-6 rounded-full text-primary hover:bg-primary hover:text-on-primary transition-all">
+<span class="material-symbols-outlined text-4xl" data-icon="photo_camera">photo_camera</span>
+</button>
+</div>
+<div class="bg-surface-container clay-surface rounded-xl p-6 flex flex-col gap-4 group border-l-4 border-error">
+<div class="flex justify-between items-start">
+<div class="w-16 h-16 bg-error-container/20 border-2 border-error flex items-center justify-center rounded-lg overflow-hidden">
+<span class="material-symbols-outlined text-error text-3xl" data-icon="fastfood">fastfood</span>
+</div>
+<div class="text-right">
+<h3 class="font-headline font-black text-xl text-on-surface uppercase">Samosa</h3>
+<p class="font-hindi text-lg text-on-surface-variant">समोसा</p>
+</div>
+</div>
+<div class="flex flex-wrap gap-2 py-2">
+<span class="bg-surface-container-lowest px-3 py-1 rounded-full text-[10px] font-black tracking-widest text-error uppercase">Oil Penalty</span>
+<span class="bg-surface-container-lowest px-3 py-1 rounded-full text-[10px] font-black tracking-widest text-error uppercase">High Sodium</span>
+</div>
+<button class="w-full mt-2 py-4 bg-surface-variant text-on-surface-variant font-headline font-black text-xs tracking-widest uppercase rounded-xl flex items-center justify-center gap-2 active:scale-95 transition-transform opacity-50 cursor-not-allowed">
+                    Empty Tank Required
+                </button>
+</div>
+</div>
+</main>
+<!-- BottomNavBar -->
+<nav class="fixed bottom-0 left-0 w-full z-50 flex justify-around items-center px-4 pb-6 pt-2 bg-slate-900/80 dark:bg-black/80 backdrop-blur-2xl rounded-t-[3rem] shadow-[0_-10px_40px_rgba(0,0,0,0.4)]">
+<a class="flex flex-col items-center justify-center text-slate-400 p-2 hover:text-orange-300 transition-colors active:scale-90 duration-200" href="#">
+<span class="material-symbols-outlined" data-icon="settings_input_component">settings_input_component</span>
+<span class="font-plus-jakarta text-[10px] uppercase font-black tracking-widest mt-1">Garage</span>
+</a>
+<a class="flex flex-col items-center justify-center text-slate-400 p-2 hover:text-orange-300 transition-colors active:scale-90 duration-200" href="#">
+<span class="material-symbols-outlined" data-icon="leaderboard">leaderboard</span>
+<span class="font-plus-jakarta text-[10px] uppercase font-black tracking-widest mt-1">Stats</span>
+</a>
+<a class="flex flex-col items-center justify-center text-slate-400 p-2 hover:text-orange-300 transition-colors active:scale-90 duration-200" href="#">
+<span class="material-symbols-outlined" data-icon="sports_score">sports_score</span>
+<span class="font-plus-jakarta text-[10px] uppercase font-black tracking-widest mt-1">Race</span>
+</a>
+<a class="flex flex-col items-center justify-center bg-gradient-to-b from-orange-400 to-orange-600 text-white rounded-full p-3 shadow-[0_0_15px_rgba(255,152,0,0.5)] active:scale-90 duration-200" href="#">
+<span class="material-symbols-outlined" data-icon="local_gas_station">local_gas_station</span>
+<span class="font-plus-jakarta text-[10px] uppercase font-black tracking-widest mt-1">Fuel</span>
+</a>
+<a class="flex flex-col items-center justify-center text-slate-400 p-2 hover:text-orange-300 transition-colors active:scale-90 duration-200" href="#">
+<span class="material-symbols-outlined" data-icon="person">person</span>
+<span class="font-plus-jakarta text-[10px] uppercase font-black tracking-widest mt-1">Driver</span>
+</a>
+</nav>
+<!-- Ambient Starfield Overlay -->
+<div class="fixed inset-0 pointer-events-none z-[-1] opacity-30">
+<img class="w-full h-full object-cover mix-blend-overlay" data-alt="Deep blue night sky with subtle stars and cosmic dust" src="https://lh3.googleusercontent.com/aida-public/AB6AXuDGPcPHNMmSb3EYgEuK0S062Vix0Pm6JFDpEEidpzJFn63vlinCpeB3exx_eSGf4tpHcHOL5GsNjVxeS29VZzgRJ42efpV7qQHldas6MVPL-hGpyLBzJsjrNw2xQvz22Dop7dZTHIoE-14gD7xDhGKavEh3tvvEyZ0x6bYXVZQVdRlIW0vAQAmx8KvBRcE2O8cw_zOkmDDpArE2PpkETCKfdL_JZf-KAEGuyecVvBma0MxLavIuZiIPPO2QKVZXRmweivg1syoliuM"/>
+</div>
+</body></html>

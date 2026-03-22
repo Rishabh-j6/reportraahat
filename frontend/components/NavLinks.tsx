@@ -4,76 +4,124 @@ import Link from "next/link";
 import { usePathname } from "next/navigation";
 import { motion } from "framer-motion";
 
-interface NavLink {
-    label: string;
-    to: string;
-    icon: string;
+interface NavItem {
+  label: string;
+  to: string;
+  icon: string; // material-symbols-outlined icon name
+  isCenter?: boolean;
 }
 
-export function NavLinks({ links }: { links: NavLink[] }) {
-    const pathname = usePathname();
+const NAV_ITEMS: NavItem[] = [
+  { label: "Garage", to: "/", icon: "settings_input_component" },
+  { label: "Stats", to: "/dashboard", icon: "leaderboard" },
+  { label: "Race", to: "/exercise", icon: "sports_score", isCenter: true },
+  { label: "Fuel", to: "/nutrition", icon: "local_gas_station" },
+  { label: "Driver", to: "/avatar", icon: "person" },
+];
 
-    return (
-        <nav className="flex flex-col gap-0.5">
-            {links.map((link) => {
-                const isActive = pathname === link.to;
-                return (
-                    <Link
-                        key={link.to}
-                        href={link.to}
-                        className="relative flex items-center gap-3 px-3 py-2.5 rounded-xl text-sm font-medium transition-all duration-200"
-                        style={{
-                            color: isActive ? "#ffffff" : "rgba(255,255,255,0.38)",
-                            background: isActive
-                                ? "rgba(255,153,51,0.12)"
-                                : "transparent",
-                        }}
-                        onMouseEnter={(e) => {
-                            if (!isActive) {
-                                (e.currentTarget as HTMLElement).style.color = "rgba(255,255,255,0.75)";
-                                (e.currentTarget as HTMLElement).style.background = "rgba(255,255,255,0.05)";
-                            }
-                        }}
-                        onMouseLeave={(e) => {
-                            if (!isActive) {
-                                (e.currentTarget as HTMLElement).style.color = "rgba(255,255,255,0.38)";
-                                (e.currentTarget as HTMLElement).style.background = "transparent";
-                            }
-                        }}
-                    >
-                        {/* Active left glow bar */}
-                        {isActive && (
-                            <motion.span
-                                layoutId="nav-active-bar"
-                                className="absolute left-0 top-1/2 -translate-y-1/2 w-0.5 h-5 rounded-full"
-                                style={{ background: "#FF9933", boxShadow: "0 0 8px #FF9933" }}
-                                transition={{ type: "spring", stiffness: 400, damping: 35 }}
-                            />
-                        )}
+export function BottomNav() {
+  const pathname = usePathname();
 
-                        {/* Icon */}
-                        <span
-                            className="text-base w-6 text-center flex-shrink-0 transition-transform duration-200"
-                            style={{
-                                filter: isActive ? "drop-shadow(0 0 4px rgba(255,153,51,0.5))" : "none",
-                                transform: isActive ? "scale(1.1)" : "scale(1)",
-                            }}
-                        >
-                            {link.icon}
-                        </span>
+  return (
+    <nav
+      className="fixed bottom-0 left-0 w-full z-50 flex justify-around items-center px-4 pb-6 pt-2 rounded-t-[3rem]"
+      style={{
+        background: "rgba(0,0,0,0.80)",
+        backdropFilter: "blur(24px)",
+        WebkitBackdropFilter: "blur(24px)",
+        boxShadow: "0 -10px 40px rgba(0,0,0,0.4)",
+      }}
+    >
+      {NAV_ITEMS.map((item) => {
+        const isActive = pathname === item.to ||
+          (item.to === "/dashboard" && pathname === "/dashboard") ||
+          (item.to === "/exercise" && pathname === "/exercise") ||
+          (item.to === "/nutrition" && pathname === "/nutrition") ||
+          (item.to === "/avatar" && (pathname === "/avatar" || pathname === "/wellness"));
 
-                        <span className="truncate">{link.label}</span>
+        if (item.isCenter) {
+          return (
+            <Link key={item.to} href={item.to}>
+              <motion.div
+                className="flex flex-col items-center justify-center text-white rounded-full p-3 -mt-6 nav-race-btn"
+                whileTap={{ scale: 0.9 }}
+                style={{
+                  fontVariationSettings: "'FILL' 1",
+                }}
+              >
+                <span className="material-symbols-outlined text-2xl"
+                  style={{ fontVariationSettings: "'FILL' 1" }}>
+                  {item.icon}
+                </span>
+                <span className="text-[10px] uppercase font-black tracking-widest mt-1">
+                  {item.label}
+                </span>
+              </motion.div>
+            </Link>
+          );
+        }
 
-                        {/* Active dot */}
-                        {isActive && (
-                            <span
-                                className="ml-auto w-1.5 h-1.5 rounded-full flex-shrink-0"
-                                style={{ background: "#FF9933", boxShadow: "0 0 6px #FF9933" }}
-                            />
-                        )}
-                    </Link>
-                );
-            })}
-        </nav>
-    );
+        return (
+          <Link
+            key={item.to}
+            href={item.to}
+            className="flex flex-col items-center justify-center p-2 transition-colors duration-200"
+            style={{
+              color: isActive ? "#FB8C00" : "#94a3b8",
+            }}
+          >
+            <span className="material-symbols-outlined text-xl">
+              {item.icon}
+            </span>
+            <span className="text-[10px] uppercase font-black tracking-widest mt-1">
+              {item.label}
+            </span>
+            {isActive && (
+              <motion.div
+                layoutId="bottom-nav-indicator"
+                className="w-1 h-1 rounded-full mt-0.5"
+                style={{ background: "#FB8C00" }}
+                transition={{ type: "spring", stiffness: 400, damping: 30 }}
+              />
+            )}
+          </Link>
+        );
+      })}
+    </nav>
+  );
+}
+
+// ── Top Header Bar ──────────────────────────────────────────────────────
+export function TopBar() {
+  return (
+    <header
+      className="fixed top-0 w-full z-50 flex justify-between items-center px-6 py-4 rounded-b-[3rem]"
+      style={{
+        background: "rgba(15,23,42,0.70)",
+        backdropFilter: "blur(20px)",
+        WebkitBackdropFilter: "blur(20px)",
+        boxShadow: "inset 0 1px 0 0 rgba(255,255,255,0.1)",
+      }}
+    >
+      <Link href="/" className="text-2xl font-black italic tracking-tighter"
+        style={{ color: "#FB8C00", fontFamily: "'Plus Jakarta Sans', sans-serif" }}>
+        VANGARD
+      </Link>
+      <div className="flex items-center gap-4">
+        <button className="hover:scale-105 transition-transform active:scale-95"
+          style={{ color: "#FB8C00" }}>
+          <span className="material-symbols-outlined">military_tech</span>
+        </button>
+        <button className="hover:scale-105 transition-transform active:scale-95"
+          style={{ color: "#FB8C00" }}>
+          <span className="material-symbols-outlined">bolt</span>
+        </button>
+      </div>
+    </header>
+  );
+}
+
+// Legacy export for backwards compat
+export function NavLinks({ links }: { links: { label: string; to: string; icon: string }[] }) {
+  return <BottomNav />;
 }

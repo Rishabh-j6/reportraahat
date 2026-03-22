@@ -3,7 +3,7 @@ import { useCallback, useState, useEffect } from "react";
 import { useDropzone } from "react-dropzone";
 import { useRouter } from "next/navigation";
 import { motion, AnimatePresence } from "framer-motion";
-import { colors, motionPresets } from "@/lib/tokens";
+import { colors } from "@/lib/tokens";
 import { useGUCStore, type ParsedReport } from "@/lib/store";
 import { getNextMock } from "@/lib/mockData";
 
@@ -12,12 +12,6 @@ const LOADING_STEPS = [
   "मेडिकल शब्द समझ रहे हैं... (Understanding jargon...)",
   "हिंदी में अनुवाद हो रहा है... (Translating to Hindi...)",
   "लगभग हो गया! (Almost done!)",
-];
-
-const FEATURES = [
-  { icon: "🔒", label: "100% Private" },
-  { icon: "⚡", label: "Instant Results" },
-  { icon: "🇮🇳", label: "Made for India" },
 ];
 
 export default function Home() {
@@ -29,17 +23,7 @@ export default function Home() {
   const [loading, setLoading] = useState(false);
   const [loadingStep, setLoadingStep] = useState(0);
   const [progress, setProgress] = useState(0);
-  const [dots, setDots] = useState<{ x: number; y: number; size: number; opacity: number }[]>([]);
   const [error, setError] = useState<string | null>(null);
-
-  useEffect(() => {
-    setDots(Array.from({ length: 50 }, () => ({
-      x: Math.random() * 100,
-      y: Math.random() * 100,
-      size: Math.random() * 2 + 0.5,
-      opacity: Math.random() * 0.25 + 0.04,
-    })));
-  }, []);
 
   useEffect(() => {
     if (!loading) return;
@@ -50,10 +34,9 @@ export default function Home() {
   useEffect(() => {
     if (!loading) { setProgress(0); return; }
     const start = Date.now();
-    const total = 15000; // Match the API timeout
+    const total = 15000;
     const id = setInterval(() => {
       const elapsed = Date.now() - start;
-      // Progress moves slower toward end to feel more natural
       const pct = Math.min((elapsed / total) * 85, 85);
       setProgress(pct);
       if (elapsed >= total) clearInterval(id);
@@ -76,27 +59,18 @@ export default function Home() {
     if (!file) return;
     setError(null);
     setLoading(true);
-
     try {
       const formData = new FormData();
       formData.append("file", file);
       formData.append("language", language);
-
-      const res = await fetch("/api/analyze-report", {
-        method: "POST",
-        body: formData,
-      });
-
+      const res = await fetch("/api/analyze-report", { method: "POST", body: formData });
       const data = await res.json();
-
       if (res.ok && data.is_readable !== undefined) {
-        // Success — save to store
         setLatestReport(data as ParsedReport);
         setProgress(100);
         await new Promise((r) => setTimeout(r, 400));
         router.push("/dashboard");
       } else if (data.useMock || !res.ok) {
-        // Backend failed or timed out — use mock data
         console.warn("Using mock fallback:", data.error);
         const mock = getNextMock();
         setLatestReport(mock);
@@ -105,7 +79,6 @@ export default function Home() {
         router.push("/dashboard");
       }
     } catch {
-      // Network error — use mock data
       console.warn("Network error, using mock fallback");
       const mock = getNextMock();
       setLatestReport(mock);
@@ -118,45 +91,32 @@ export default function Home() {
   };
 
   return (
-    <main
-      className="min-h-screen flex flex-col items-center justify-center px-4 relative overflow-hidden"
-      style={{ background: colors.bg }}
-    >
-      {/* Enhanced ambient glow */}
-      <div className="fixed inset-0 pointer-events-none" style={{
-        backgroundImage:
-          "radial-gradient(ellipse at 20% 10%, rgba(255,153,51,0.07) 0%, transparent 55%), " +
-          "radial-gradient(ellipse at 80% 80%, rgba(34,197,94,0.06) 0%, transparent 55%), " +
-          "radial-gradient(ellipse at 55% 50%, rgba(99,102,241,0.03) 0%, transparent 60%)",
-      }} />
+    <div className="min-h-screen relative overflow-hidden" style={{ background: "#87CEEB" }}>
 
-      {/* Starfield */}
-      {dots.map((dot, i) => (
-        <div key={i} className="absolute rounded-full pointer-events-none"
-          style={{
-            left: `${dot.x}%`, top: `${dot.y}%`,
-            width: dot.size, height: dot.size,
-            background: "white", opacity: dot.opacity,
-          }}
-        />
-      ))}
+      {/* Hill Climb Racing green terrain */}
+      <div className="fixed bottom-0 left-0 w-full h-48 z-0"
+        style={{ background: "#4CAF50", borderRadius: "100% 100% 0 0 / 40% 40% 0 0", transform: "scaleX(1.5)" }} />
+      <div className="fixed bottom-0 z-0"
+        style={{ left: "-10%", width: "120%", height: "8rem", background: "#388E3C", borderRadius: "100% 100% 0 0 / 50% 50% 0 0" }} />
+
+      {/* Subtle starfield overlay */}
+      <div className="fixed inset-0 pointer-events-none starfield opacity-20 z-[5]" />
 
       {/* Loading overlay */}
       <AnimatePresence>
         {loading && (
           <motion.div
-            className="fixed inset-0 flex flex-col items-center justify-center z-50"
-            style={{ background: "rgba(13,13,26,0.97)" }}
+            className="fixed inset-0 flex flex-col items-center justify-center z-[60]"
+            style={{ background: "rgba(18,18,31,0.97)" }}
             initial={{ opacity: 0 }}
             animate={{ opacity: 1 }}
           >
-            {/* Animated pipeline */}
+            {/* Pipeline animation */}
             <svg width="320" height="90" viewBox="0 0 320 90" className="mb-8">
               <rect x="10" y="20" width="70" height="50" rx="10"
-                fill={colors.bgCard} stroke={colors.accent} strokeWidth="1.5" />
+                fill={colors.surfaceContainer} stroke={colors.accent} strokeWidth="1.5" />
               <text x="45" y="42" textAnchor="middle" fontSize="18">📄</text>
               <text x="45" y="60" textAnchor="middle" fill={colors.textMuted} fontSize="9">Report</text>
-
               <line x1="80" y1="45" x2="240" y2="45"
                 stroke={colors.border} strokeWidth="1.5" strokeDasharray="6 4" />
               {[0, 1, 2].map((i) => (
@@ -164,9 +124,8 @@ export default function Home() {
                   animate={{ cx: [80, 240], opacity: [0, 1, 1, 0] }}
                   transition={{ duration: 1.4, delay: i * 0.45, repeat: Infinity }} />
               ))}
-
               <circle cx="275" cy="45" r="32"
-                fill={colors.bgCard} stroke={colors.accent} strokeWidth="1.5" />
+                fill={colors.surfaceContainer} stroke={colors.accent} strokeWidth="1.5" />
               <text x="275" y="40" textAnchor="middle" fontSize="18">🧠</text>
               <text x="275" y="58" textAnchor="middle" fill={colors.textMuted} fontSize="9">AI Engine</text>
             </svg>
@@ -184,8 +143,7 @@ export default function Home() {
               </motion.p>
             </AnimatePresence>
 
-            {/* Progress bar */}
-            <div className="w-64 h-1 rounded-full overflow-hidden" style={{ background: colors.border }}>
+            <div className="w-64 h-1.5 rounded-full overflow-hidden" style={{ background: colors.surfaceContainerHigh }}>
               <motion.div
                 className="h-full rounded-full"
                 style={{ background: `linear-gradient(90deg, #FF9933, #FFCC80)` }}
@@ -200,151 +158,122 @@ export default function Home() {
         )}
       </AnimatePresence>
 
-      {/* Main card */}
-      <motion.div
-        className="relative z-10 w-full max-w-md flex flex-col items-center"
-        {...motionPresets.fadeUp}
-        transition={{ duration: 0.5 }}
-      >
-        {/* Logo */}
-        <div className="flex items-center gap-3 mb-4">
-          <div
-            className="w-12 h-12 rounded-2xl flex items-center justify-center text-2xl"
-            style={{ background: "rgba(255,153,51,0.15)", border: "1px solid rgba(255,153,51,0.25)" }}
-          >
-            🏥
-          </div>
-          <div className="leading-none">
-            <div className="text-xs font-semibold tracking-widest uppercase mb-0.5" style={{ color: colors.textMuted }}>
-              Report
-            </div>
-            <h1 className="text-3xl font-black tracking-tight" style={{ color: "#FF9933" }}>
-              Raahat
-            </h1>
-          </div>
-        </div>
+      {/* Main content */}
+      <main className="relative z-10 pt-28 pb-48 px-4 flex flex-col items-center justify-center min-h-screen">
 
-        <p className="text-base mb-1 text-center font-devanagari" style={{ color: colors.textSecondary }}>
-          अपनी मेडिकल रिपोर्ट समझें — आसान हिंदी में
-        </p>
-        <p className="text-sm mb-6 text-center" style={{ color: colors.textMuted }}>
-          Upload your report and understand it instantly
-        </p>
-
-        {/* Language toggle */}
-        <div className="flex gap-1 mb-5 p-1 rounded-2xl w-full"
-          style={{ background: colors.bgSubtle, border: `1px solid ${colors.border}` }}>
-          {(["HI", "EN"] as const).map((lang) => (
-            <button key={lang} onClick={() => useGUCStore.getState().setLanguage(lang)}
-              className="flex-1 py-2.5 rounded-xl text-sm font-semibold transition-all duration-200"
-              style={{
-                background: language === lang ? colors.accent : "transparent",
-                color: language === lang ? "#0d0d1a" : colors.textMuted,
-                boxShadow: language === lang ? "0 2px 12px rgba(255,153,51,0.3)" : "none",
-              }}>
-              {lang === "HI" ? "🇮🇳 हिंदी" : "🌐 English"}
-            </button>
-          ))}
-        </div>
-
-        {/* Drop zone */}
-        <div
-          {...getRootProps()}
-          className="w-full cursor-pointer rounded-2xl mb-4 transition-all duration-300"
-          style={{
-            border: `2px dashed ${isDragActive || file ? colors.accent : colors.accentBorder}`,
-            background: isDragActive ? "rgba(255,153,51,0.05)" : colors.bgCard,
-            padding: "36px 20px",
-            boxShadow: isDragActive || file ? "0 0 24px rgba(255,153,51,0.15)" : "none",
-          }}
+        {/* Central upload card — soft clay style */}
+        <motion.section
+          className="max-w-xl w-full bg-white/95 rounded-[32px] pixel-border p-8 md:p-12 text-center clay-inset relative"
+          initial={{ opacity: 0, scale: 0.95, y: 20 }}
+          animate={{ opacity: 1, scale: 1, y: 0 }}
+          transition={{ duration: 0.5, ease: "easeOut" }}
         >
-          <input {...getInputProps()} />
-          <AnimatePresence mode="wait">
-            {file ? (
-              <motion.div key="file" className="flex flex-col items-center"
-                initial={{ opacity: 0, scale: 0.92 }} animate={{ opacity: 1, scale: 1 }}>
-                <div className="text-4xl mb-2">✅</div>
-                <p className="text-white font-semibold">{file.name}</p>
-                <p className="text-xs mt-1" style={{ color: colors.ok }}>
-                  Ready! Click Samjho below ↓
-                </p>
-              </motion.div>
-            ) : (
-              <motion.div key="empty" className="flex flex-col items-center"
-                initial={{ opacity: 0 }} animate={{ opacity: 1 }}>
-                <motion.div className="mb-3 text-5xl"
-                  animate={{ y: [0, -6, 0] }}
-                  transition={{ duration: 2.5, repeat: Infinity }}>
-                  📋
-                </motion.div>
-                <p className="text-white font-bold text-lg mb-1">
-                  {isDragActive ? "Drop it here! 🎯" : "Drag & drop your report"}
-                </p>
-                <p className="text-sm" style={{ color: colors.textMuted }}>
-                  or click to browse — PDF or Image
-                </p>
-                <p className="text-xs mt-2" style={{ color: colors.textFaint }}>
-                  Supports: JPG, PNG, PDF
-                </p>
-              </motion.div>
-            )}
-          </AnimatePresence>
-        </div>
+          {/* Floating verified shield */}
+          <div className="absolute -top-6 -left-6 bg-[#2ccb63] text-white p-3 rounded-2xl pixel-border -rotate-12 z-20">
+            <span className="material-symbols-outlined text-3xl">verified_user</span>
+          </div>
 
-        {/* Error message */}
-        {error && (
-          <p className="text-xs mb-3 text-center" style={{ color: "#EF4444" }}>
-            {error}
+          {/* Title */}
+          <h1 className="font-hindi text-3xl md:text-4xl font-black text-slate-900 mb-2">
+            अपनी मेडिकल रिपोर्ट समझें
+          </h1>
+          <p className="text-xl md:text-2xl font-headline font-bold text-slate-600 mb-8">
+            Understand your report
           </p>
-        )}
 
-        {/* CTA button */}
-        <motion.button
-          onClick={handleAnalyze}
-          disabled={loading || !file}
-          className="w-full py-4 rounded-2xl text-base font-black disabled:opacity-50 transition-all"
-          style={{
-            background: "linear-gradient(135deg, #FF9933 0%, #FFAA55 100%)",
-            color: "#0d0d1a",
-            boxShadow: "0 4px 20px rgba(255,153,51,0.4)",
-          }}
-          whileHover={{ scale: 1.01, boxShadow: "0 6px 28px rgba(255,153,51,0.5)" }}
-          whileTap={{ scale: 0.98 }}
-        >
-          ✨ Samjho! — समझो
-        </motion.button>
+          {/* Language toggle */}
+          <div className="flex gap-1 mb-6 p-1 rounded-2xl w-full bg-slate-100">
+            {(["HI", "EN"] as const).map((lang) => (
+              <button key={lang} onClick={() => useGUCStore.getState().setLanguage(lang)}
+                className="flex-1 py-2.5 rounded-xl text-sm font-bold transition-all duration-200"
+                style={{
+                  background: language === lang ? "#FF9933" : "transparent",
+                  color: language === lang ? "#ffffff" : "#94a3b8",
+                  boxShadow: language === lang ? "4px 4px 0px 0px #6d3a00" : "none",
+                }}>
+                {lang === "HI" ? "🇮🇳 हिंदी" : "🌐 English"}
+              </button>
+            ))}
+          </div>
 
-        {/* Feature chips */}
-        <div className="flex items-center gap-3 mt-5">
-          {FEATURES.map((f) => (
-            <div
-              key={f.label}
-              className="flex items-center gap-1.5 px-3 py-1.5 rounded-full text-xs font-medium"
-              style={{ background: colors.bgSubtle, border: `1px solid ${colors.border}`, color: colors.textMuted }}
-            >
-              <span>{f.icon}</span>
-              <span>{f.label}</span>
-            </div>
-          ))}
+          {/* Drop zone */}
+          <div
+            {...getRootProps()}
+            className="group relative border-4 border-dashed rounded-3xl p-10 mb-8 flex flex-col items-center justify-center transition-all cursor-pointer"
+            style={{
+              background: isDragActive || file ? "#FFF3E0" : "#f8fafc",
+              borderColor: isDragActive || file ? "#FF9933" : "#e2e8f0",
+            }}
+          >
+            <input {...getInputProps()} />
+            <AnimatePresence mode="wait">
+              {file ? (
+                <motion.div key="file" className="flex flex-col items-center"
+                  initial={{ opacity: 0, scale: 0.92 }} animate={{ opacity: 1, scale: 1 }}>
+                  <div className="text-5xl mb-3">✅</div>
+                  <p className="text-slate-900 font-bold text-lg">{file.name}</p>
+                  <p className="text-sm mt-1" style={{ color: "#22C55E" }}>
+                    Ready! Tap Samjho below ↓
+                  </p>
+                </motion.div>
+              ) : (
+                <motion.div key="empty" className="flex flex-col items-center"
+                  initial={{ opacity: 0 }} animate={{ opacity: 1 }}>
+                  <motion.div className="mb-3 text-6xl"
+                    animate={{ y: [0, -8, 0] }}
+                    transition={{ duration: 2.5, repeat: Infinity }}>
+                    📋
+                  </motion.div>
+                  <p className="text-slate-600 font-bold text-lg mb-1">
+                    {isDragActive ? "Drop it here! 🎯" : "Tap to upload or drag & drop"}
+                  </p>
+                  <p className="text-slate-400 text-sm mt-1">
+                    PDF, JPG, or PNG (Max 10MB)
+                  </p>
+                </motion.div>
+              )}
+            </AnimatePresence>
+          </div>
+
+          {/* Error */}
+          {error && (
+            <p className="text-xs mb-3 text-center text-red-500">{error}</p>
+          )}
+
+          {/* CTA Button — pixel shadow style */}
+          <motion.button
+            onClick={handleAnalyze}
+            disabled={loading || !file}
+            className="w-full py-5 rounded-2xl text-xl font-black disabled:opacity-50 transition-all flex items-center justify-center gap-3 pixel-shadow-orange active:translate-y-0.5 active:shadow-none"
+            style={{
+              background: "#FF9800",
+              color: "#FFFFFF",
+              fontFamily: "'Plus Jakarta Sans', sans-serif",
+            }}
+            whileTap={{ scale: 0.98 }}
+          >
+            <span className="font-hindi">Samjho!</span>
+            <span className="opacity-50 text-2xl">—</span>
+            <span className="font-hindi">समझो</span>
+          </motion.button>
+        </motion.section>
+
+        {/* Trust chips — pixel style */}
+        <div className="mt-12 flex flex-wrap justify-center gap-4">
+          <div className="bg-slate-900 text-white px-4 py-2 rounded-md pixel-border flex items-center gap-2 text-sm font-bold">
+            <span className="material-symbols-outlined text-sm">lock</span>
+            100% PRIVATE
+          </div>
+          <div className="bg-white text-slate-900 px-4 py-2 rounded-md pixel-border flex items-center gap-2 text-sm font-bold">
+            <span className="material-symbols-outlined text-sm">auto_awesome</span>
+            AI POWERED
+          </div>
+          <div className="bg-orange-500 text-white px-4 py-2 rounded-md pixel-border flex items-center gap-2 text-sm font-bold">
+            <span className="material-symbols-outlined text-sm">favorite</span>
+            DOCTOR VERIFIED
+          </div>
         </div>
-      </motion.div>
-
-      {/* Floating chat pill */}
-      <motion.div
-        className="fixed bottom-6 right-6 flex items-center gap-2 px-4 py-2.5 rounded-full cursor-pointer text-sm font-bold"
-        style={{
-          background: "rgba(255,153,51,0.15)",
-          border: "1px solid rgba(255,153,51,0.3)",
-          color: "#FF9933",
-          backdropFilter: "blur(12px)",
-        }}
-        animate={{ y: [0, -4, 0] }}
-        transition={{ duration: 2.5, repeat: Infinity }}
-        whileHover={{ scale: 1.05, background: "rgba(255,153,51,0.25)" }}
-      >
-        <span>🤖</span>
-        <span>Dr. Raahat</span>
-      </motion.div>
-    </main>
+      </main>
+    </div>
   );
 }

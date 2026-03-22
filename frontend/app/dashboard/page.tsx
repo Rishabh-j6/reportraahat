@@ -9,16 +9,8 @@ import HealthChecklist from "@/components/HealthChecklist";
 import ShareButton from "@/components/ShareButton";
 import DoctorChat from "@/components/DoctorChat";
 import { PageShell, SectionLabel, Banner } from "@/components/ui";
-import { colors } from "@/lib/tokens";
+import { colors, racingLabels } from "@/lib/tokens";
 import { useGUCStore } from "@/lib/store";
-
-// Shared card style — matches the dark theme
-const CARD_STYLE: React.CSSProperties = {
-  background: colors.bgCard,
-  border: `1px solid ${colors.border}`,
-  borderRadius: 16,
-  padding: 20,
-};
 
 const cardVariants = {
   hidden: { opacity: 0, y: 20 },
@@ -28,13 +20,15 @@ const cardVariants = {
   }),
 };
 
-// Hover card wrapper
-const HoverCard = ({ children, custom, style }: { children: React.ReactNode; custom: number; style?: React.CSSProperties }) => (
+const ClayCard = ({ children, custom, className, style }: {
+  children: React.ReactNode; custom: number; className?: string; style?: React.CSSProperties
+}) => (
   <motion.div
     custom={custom} variants={cardVariants} initial="hidden" animate="visible"
-    whileHover={{ y: -3, boxShadow: "0 8px 32px rgba(0,0,0,0.35)" }}
+    whileHover={{ y: -3, boxShadow: "0 12px 40px rgba(0,0,0,0.4)" }}
     transition={{ type: "spring", stiffness: 300, damping: 25 }}
-    style={{ ...CARD_STYLE, ...style }}
+    className={`rounded-xl p-6 md:p-8 clay-card ${className || ""}`}
+    style={{ background: colors.surfaceContainer, ...style }}
   >
     {children}
   </motion.div>
@@ -61,28 +55,22 @@ export default function Dashboard() {
     setTimeout(() => setShowConfetti(false), 2500);
   }, []);
 
-  // Redirect to home if no report
   if (!latestReport) {
     return (
       <PageShell>
         <div className="flex flex-col items-center justify-center min-h-[60vh] gap-4">
-          <span className="text-6xl">📋</span>
-          <h2 className="text-xl font-bold text-white">No Report Uploaded</h2>
+          <span className="text-6xl">🏎️</span>
+          <h2 className="text-xl font-headline font-bold" style={{ color: colors.accentLight }}>No Engine Data</h2>
           <p className="text-sm text-center" style={{ color: colors.textMuted }}>
-            Upload a medical report first to see your analysis dashboard.
+            Upload a medical report to start your health race.
           </p>
           <motion.button
             onClick={() => router.push("/")}
-            className="mt-2 px-6 py-3 rounded-xl text-sm font-bold"
-            style={{
-              background: "linear-gradient(135deg, #FF9933 0%, #FFAA55 100%)",
-              color: "#0d0d1a",
-              boxShadow: "0 2px 12px rgba(255,153,51,0.3)",
-            }}
-            whileHover={{ scale: 1.02 }}
+            className="mt-2 px-6 py-3 rounded-xl text-sm font-bold pixel-shadow-orange active:translate-y-0.5 active:shadow-none"
+            style={{ background: "#FF9800", color: "#FFFFFF" }}
             whileTap={{ scale: 0.97 }}
           >
-            ← Upload Report
+            ← Start Race
           </motion.button>
         </div>
       </PageShell>
@@ -90,19 +78,15 @@ export default function Dashboard() {
   }
 
   const report = latestReport;
-
-  // Derive data from report
   const abnormalFindings = report.findings.filter(
     (f) => f.status === "HIGH" || f.status === "LOW" || f.status === "CRITICAL"
   );
-
   const organFlags = {
     liver: report.affected_organs.includes("LIVER"),
     heart: report.affected_organs.includes("HEART"),
     kidney: report.affected_organs.includes("KIDNEY"),
     lungs: report.affected_organs.includes("LUNGS"),
   };
-
   const labValues = report.findings.map((f) => ({
     name: f.simple_name_english || f.parameter,
     nameHi: f.simple_name_hindi || f.parameter,
@@ -110,20 +94,10 @@ export default function Dashboard() {
     unit: f.unit || "",
     status: (f.status === "CRITICAL" ? "HIGH" : f.status) as "HIGH" | "LOW" | "NORMAL",
   }));
-
   const checklist = checklistProgress.length > 0
     ? checklistProgress.map((c) => c.label)
-    : [
-      "Visit a doctor for proper diagnosis",
-      "Follow dietary recommendations",
-      "Take prescribed supplements",
-      "Light daily exercise",
-      "Re-test in 4-6 weeks",
-    ];
-
-  const summaryText = language === "hindi"
-    ? report.overall_summary_hindi
-    : report.overall_summary_english;
+    : ["Visit a doctor for proper diagnosis", "Follow dietary recommendations", "Take prescribed supplements", "Light daily exercise", "Re-test in 4-6 weeks"];
+  const summaryText = language === "hindi" ? report.overall_summary_hindi : report.overall_summary_english;
 
   const handleListen = () => {
     if (!window.speechSynthesis) return;
@@ -139,45 +113,29 @@ export default function Dashboard() {
   };
 
   const handleAddXP = (amount: number) => {
-    setXp((p) => p + amount);
-    addXP(amount);
-    setShowXPBurst(true);
-    setTimeout(() => setShowXPBurst(false), 1000);
+    setXp((p) => p + amount); addXP(amount);
+    setShowXPBurst(true); setTimeout(() => setShowXPBurst(false), 1000);
   };
 
   const handleChatSend = async (message: string): Promise<string> => {
     appendChatMessage("user", message);
-
     try {
-      // Build GUC for the chat
-      const guc = {
-        name: profile.name,
-        age: profile.age,
-        gender: profile.gender,
-        language: profile.language,
-        latestReport: report,
-        mentalWellness: useGUCStore.getState().mentalWellness,
-      };
-
-      const res = await fetch("/api/chat", {
-        method: "POST",
-        headers: { "Content-Type": "application/json" },
-        body: JSON.stringify({
-          message,
-          history: chatHistory.slice(-20), // Last 20 messages for context
-          guc,
-        }),
-      });
-
+      const guc = { name: profile.name, age: profile.age, gender: profile.gender, language: profile.language, latestReport: report, mentalWellness: useGUCStore.getState().mentalWellness };
+      const res = await fetch("/api/chat", { method: "POST", headers: { "Content-Type": "application/json" }, body: JSON.stringify({ message, history: chatHistory.slice(-20), guc }) });
       const data = await res.json();
       const reply = data.reply || "Sorry, I could not process your request.";
-      appendChatMessage("assistant", reply);
-      return reply;
+      appendChatMessage("assistant", reply); return reply;
     } catch {
       const fallback = "Sorry, I'm having trouble connecting. Please try again.";
-      appendChatMessage("assistant", fallback);
-      return fallback;
+      appendChatMessage("assistant", fallback); return fallback;
     }
+  };
+
+  // Racing-style telemetry label mapping
+  const telemetryLabels: Record<string, string> = {
+    "Heart Rate": "RPM (HEART RATE)", "Hemoglobin": "FUEL DENSITY (HEMOGLOBIN)",
+    "Blood Sugar": "FUEL TEMP (GLUCOSE)", "Blood Pressure": "OIL PRESSURE (BLOOD)",
+    "Oxygen": "AIR INTAKE (O2 SAT)", "Cholesterol": "EXHAUST FLOW (CHOLESTEROL)",
   };
 
   return (
@@ -187,10 +145,9 @@ export default function Dashboard() {
         {showConfetti && (
           <div className="fixed inset-0 pointer-events-none z-50 overflow-hidden">
             {[...Array(25)].map((_, i) => (
-              <motion.div key={i} className="absolute w-2 h-2 rounded-sm"
+              <motion.div key={i} className="absolute w-2 h-2"
                 style={{
-                  left: `${Math.random() * 100}%`,
-                  top: "-10px",
+                  left: `${Math.random() * 100}%`, top: "-10px",
                   background: ["#FF9933", "#22C55E", "#3B82F6", "#EC4899"][i % 4],
                 }}
                 animate={{ y: ["0vh", "110vh"], rotate: [0, 720], opacity: [1, 1, 0] }}
@@ -201,38 +158,25 @@ export default function Dashboard() {
         )}
       </AnimatePresence>
 
-      {/* Sticky header */}
-      <div
-        className="sticky top-0 z-40 flex items-center justify-between px-5 py-3 mb-5 -mx-4 rounded-b-2xl"
-        style={{
-          background: "rgba(13,13,26,0.94)",
-          backdropFilter: "blur(20px)",
-          borderBottom: `1px solid rgba(255,153,51,0.08)`,
-          boxShadow: "0 1px 0 rgba(255,153,51,0.05), 0 4px 24px rgba(0,0,0,0.3)",
-        }}
-      >
-        <div className="absolute left-0 top-0 h-full w-16 pointer-events-none rounded-bl-2xl"
-          style={{ background: "radial-gradient(ellipse at 0% 50%, rgba(255,153,51,0.06) 0%, transparent 80%)" }} />
+      {/* Dashboard header — Engine Status */}
+      <div className="mb-8 flex flex-col md:flex-row md:items-end justify-between gap-4">
         <div>
-          <div className="flex items-center gap-2">
-            <span className="text-lg">🏥</span>
-            <h1 className="text-lg font-black">
-              <span style={{ color: "rgba(255,255,255,0.6)" }}>Report</span>
-              <span style={{ color: colors.accent }}>Raahat</span>
-            </h1>
+          <div className="flex items-center gap-2 mb-1">
+            <div className="w-3 h-3 rounded-sm" style={{ background: colors.tertiary }} />
           </div>
-          <p className="text-xs font-devanagari" style={{ color: colors.textMuted }}>
-            नमस्ते, {profile.name} 🙏
+          <h1 className="font-headline text-3xl md:text-4xl font-extrabold tracking-tight" style={{ color: colors.accentLight }}>
+            {racingLabels.dashboard}
+          </h1>
+          <p className="text-base" style={{ color: colors.textMuted }}>
+            Race conditions: {report.severity_level === "URGENT" ? "Critical." : "Optimal."} {abnormalFindings.length > 0 ? `${abnormalFindings.length} alerts detected.` : "All systems nominal."}
           </p>
         </div>
-        <div className="flex items-center gap-2">
+        <div className="flex items-center gap-3">
           {/* XP pill */}
           <motion.div
-            className="flex items-center gap-1.5 px-3 py-1.5 rounded-full text-sm font-bold"
+            className="flex items-center gap-1.5 px-4 py-2 rounded-full text-sm font-black"
             style={{
-              background: "rgba(255,153,51,0.12)",
-              border: `1px solid rgba(255,153,51,0.25)`,
-              color: colors.accent,
+              background: "rgba(255,153,51,0.12)", border: `1px solid rgba(255,153,51,0.25)`, color: colors.accent,
               boxShadow: showXPBurst ? "0 0 16px rgba(255,153,51,0.35)" : "none",
             }}
             animate={showXPBurst ? { scale: [1, 1.25, 1] } : {}}
@@ -240,120 +184,155 @@ export default function Dashboard() {
           >
             ⭐ {xp} XP
           </motion.div>
-          {/* Listen button */}
-          <motion.button
-            onClick={handleListen}
-            className="flex items-center gap-1.5 px-3 py-1.5 rounded-full text-xs font-semibold transition-all"
+          {/* Listen */}
+          <motion.button onClick={handleListen}
+            className="flex items-center gap-1.5 px-4 py-2 rounded-full text-xs font-bold transition-all"
             style={{
-              background: speaking ? colors.accent : colors.bgSubtle,
+              background: speaking ? colors.accent : colors.surfaceContainerHigh,
               color: speaking ? "#0d0d1a" : colors.textMuted,
               border: `1px solid ${speaking ? colors.accent : colors.border}`,
-              boxShadow: speaking ? "0 0 12px rgba(255,153,51,0.3)" : "none",
-            }}
-            whileTap={{ scale: 0.95 }}
-          >
+            }} whileTap={{ scale: 0.95 }}>
             🎧 {speaking ? "रोकें" : "सुनें"}
           </motion.button>
-          <a href="/" className="text-xs transition-colors"
-            style={{ color: colors.textMuted }}>
-            ← New
-          </a>
+          <a href="/" className="text-xs transition-colors" style={{ color: colors.textMuted }}>← New</a>
         </div>
       </div>
 
-      {/* Deficiency banner */}
+      {/* Alert banner */}
       {abnormalFindings.length > 0 && (
-        <Banner delay={0.05}>
+        <Banner color={colors.error} delay={0.05}>
+          <span className="font-black uppercase text-xs">REDLINE DETECTED — </span>
           रिपोर्ट में {abnormalFindings.length} असामान्य मान मिले — {report.affected_organs.join(", ")} पर ध्यान दें।
         </Banner>
       )}
 
-      {/* 2-col card grid */}
-      <div className="grid grid-cols-1 md:grid-cols-2 gap-3">
+      {/* Bento Grid */}
+      <div className="grid grid-cols-1 md:grid-cols-12 gap-4 md:gap-6">
 
-        {/* Card 1 — Report summary */}
-        <HoverCard custom={0}>
-          <SectionLabel>📄 Report Summary</SectionLabel>
-          <p className="text-sm leading-relaxed mb-2" style={{ color: colors.textSecondary }}>
-            {report.overall_summary_english}
-          </p>
-          {language === "hindi" && (
-            <p className="text-sm leading-relaxed font-devanagari" style={{ color: "rgba(255,255,255,0.7)" }}>
-              {report.overall_summary_hindi}
-            </p>
-          )}
-          <div className="flex items-center gap-2 mt-3">
-            <span className="text-[10px] px-2 py-1 rounded-full font-medium"
-              style={{
-                background: report.severity_level === "URGENT" ? "rgba(239,68,68,0.15)" :
-                  report.severity_level === "MODERATE_CONCERN" ? "rgba(245,158,11,0.15)" :
-                    "rgba(34,197,94,0.15)",
-                color: report.severity_level === "URGENT" ? "#EF4444" :
-                  report.severity_level === "MODERATE_CONCERN" ? "#F59E0B" :
-                    "#22C55E",
-              }}>
-              {report.severity_level.replace(/_/g, " ")}
-            </span>
-            <span className="text-[10px]" style={{ color: colors.textFaint }}>
-              {report.report_type.replace(/_/g, " ")}
-            </span>
+        {/* Card 1 — Engine Log */}
+        <ClayCard custom={0} className="md:col-span-7">
+          <div className="flex items-center justify-between mb-4">
+            <h2 className="font-headline text-lg font-bold flex items-center gap-2">
+              <span className="material-symbols-outlined" style={{ color: colors.accentLight }}>description</span>
+              {racingLabels.report}
+            </h2>
+            {abnormalFindings.length > 0 && (
+              <span className="px-3 py-1 text-[10px] font-black rounded-full uppercase"
+                style={{ background: colors.errorContainer, color: "#ffdad6" }}>
+                Alert Detected
+              </span>
+            )}
           </div>
-        </HoverCard>
+          {abnormalFindings.slice(0, 2).map((f, i) => (
+            <div key={i} className="p-4 rounded-lg mb-2"
+              style={{ background: colors.surfaceContainerLowest, borderLeft: `4px solid ${f.status === "CRITICAL" || f.status === "HIGH" ? colors.error : colors.caution}` }}>
+              <p className="text-xs font-black uppercase mb-1" style={{ color: f.status === "CRITICAL" || f.status === "HIGH" ? colors.error : colors.caution }}>
+                Redline Finding #{String(i + 1).padStart(2, "0")}
+              </p>
+              <p className="text-sm" style={{ color: colors.textPrimary }}>{f.simple_name_english || f.parameter}: {f.value} {f.unit}</p>
+            </div>
+          ))}
+          <div className="p-4 rounded-lg mt-2" style={{ background: colors.surfaceContainerLow, borderLeft: `4px solid ${colors.tertiary}` }}>
+            <p className="text-xs font-black uppercase mb-1" style={{ color: colors.tertiary }}>Status: Operational</p>
+            <p className="text-sm italic" style={{ color: `${colors.textPrimary}cc` }}>{report.overall_summary_english}</p>
+          </div>
+          {/* Pixel accents */}
+          <div className="flex gap-1 mt-4 justify-end">
+            <div className="w-2 h-2" style={{ background: colors.accent }} />
+            <div className="w-2 h-2" style={{ background: colors.secondary }} />
+            <div className="w-2 h-2" style={{ background: colors.tertiary }} />
+          </div>
+        </ClayCard>
 
-        {/* Card 2 — Simple explanation */}
-        <HoverCard custom={1} style={{ borderColor: colors.accentBorder }}>
-          <SectionLabel>💬 आसान भाषा में</SectionLabel>
-          <p className="text-white text-base leading-relaxed font-semibold mb-2">
-            {report.overall_summary_hindi}
-          </p>
-          <p className="text-sm leading-relaxed mb-4" style={{ color: colors.textMuted }}>
-            {report.overall_summary_english}
-          </p>
-          <motion.button
-            onClick={handleListen}
-            className="flex items-center gap-2 px-4 py-2 rounded-xl text-sm font-bold transition-all"
-            style={{
-              background: "linear-gradient(135deg, #FF9933 0%, #FFAA55 100%)",
-              color: "#0d0d1a",
-              boxShadow: "0 2px 12px rgba(255,153,51,0.35)"
-            }}
-            whileHover={{ scale: 1.02, boxShadow: "0 4px 20px rgba(255,153,51,0.45)" }}
-            whileTap={{ scale: 0.97 }}
-          >
-            🎧 सुनें (Listen)
-          </motion.button>
-        </HoverCard>
+        {/* Card 2 — Driver's Tip */}
+        <ClayCard custom={1} className="md:col-span-5 flex flex-col justify-center relative overflow-hidden"
+          style={{ background: colors.primaryContainer }}>
+          <div className="absolute -top-4 -right-4 w-24 h-24 bg-white/10 rounded-full blur-3xl" />
+          <div className="flex items-start gap-4 relative z-10">
+            <div className="w-12 h-12 rounded-full flex items-center justify-center flex-shrink-0"
+              style={{ background: "rgba(105,56,0,0.20)" }}>
+              <span className="material-symbols-outlined">volume_up</span>
+            </div>
+            <div>
+              <h3 className="font-headline text-lg font-black uppercase tracking-tighter" style={{ color: colors.onPrimaryContainer }}>
+                Driver&apos;s Tip
+              </h3>
+              <p className="text-base leading-snug mt-2 font-medium" style={{ color: colors.onPrimaryContainer }}>
+                {language === "hindi" ? report.overall_summary_hindi : `"${report.overall_summary_english}"`}
+              </p>
+              <motion.button onClick={handleListen}
+                className="mt-4 flex items-center gap-2 px-4 py-2 rounded-xl text-sm font-bold"
+                style={{ background: "rgba(105,56,0,0.20)", color: colors.onPrimaryContainer }}
+                whileTap={{ scale: 0.97 }}>
+                🎧 {speaking ? "Stop" : "Listen"}
+              </motion.button>
+            </div>
+          </div>
+        </ClayCard>
 
-        {/* Card 3 — Body Map */}
-        <HoverCard custom={2}>
-          <SectionLabel>🫀 Affected Body Part</SectionLabel>
+        {/* Card 3 — Internal Stage (Body Map) */}
+        <ClayCard custom={2} className="md:col-span-5">
+          <h2 className="font-headline text-lg font-bold mb-4 flex items-center gap-2">
+            <span className="material-symbols-outlined" style={{ color: colors.secondary }}>accessibility_new</span>
+            {racingLabels.bodyMap}
+          </h2>
           <BodyMap organFlags={organFlags} />
-        </HoverCard>
+        </ClayCard>
 
-        {/* Card 4 — Lab Values */}
-        <HoverCard custom={3}>
-          <SectionLabel>🧪 Lab Values</SectionLabel>
-          <LabValuesTable values={labValues} />
-        </HoverCard>
+        {/* Card 4 — Telemetry Data (Lab Values) */}
+        <ClayCard custom={3} className="md:col-span-7">
+          <h2 className="font-headline text-lg font-bold mb-4 flex items-center gap-2">
+            <span className="material-symbols-outlined" style={{ color: colors.tertiary }}>query_stats</span>
+            {racingLabels.labValues}
+          </h2>
+          <div className="grid grid-cols-1 sm:grid-cols-2 gap-3">
+            {labValues.slice(0, 4).map((val, i) => {
+              const racingName = Object.entries(telemetryLabels).find(([k]) =>
+                val.name.toLowerCase().includes(k.toLowerCase()))?.[1] || val.name.toUpperCase();
+              const statusBg = val.status === "HIGH" ? colors.errorContainer : val.status === "LOW" ? colors.secondaryContainer : `${colors.tertiaryContainer}`;
+              const statusColor = val.status === "HIGH" ? "#ffdad6" : val.status === "LOW" ? "#b0b2ff" : colors.onTertiaryContainer;
+              return (
+                <div key={i} className="p-4 rounded-xl flex items-center justify-between"
+                  style={{ background: colors.surfaceContainerLowest }}>
+                  <div>
+                    <p className="text-[10px] font-black uppercase tracking-tight" style={{ color: colors.textMuted }}>{racingName}</p>
+                    <p className="text-2xl font-headline font-bold">{val.value} <span className="text-sm font-normal" style={{ color: colors.textMuted }}>{val.unit}</span></p>
+                  </div>
+                  <div className="w-12 h-12 flex items-center justify-center rounded-full font-black text-[10px]"
+                    style={{ background: statusBg, color: statusColor }}>
+                    {val.status === "NORMAL" ? "NORM" : val.status}
+                  </div>
+                </div>
+              );
+            })}
+          </div>
+        </ClayCard>
 
-        {/* Card 5 — AI Confidence */}
-        <HoverCard custom={4} style={{ display: "flex", flexDirection: "column", alignItems: "center", justifyContent: "center" }}>
-          <SectionLabel>🎯 AI Confidence</SectionLabel>
+        {/* Card 5 — AI Accuracy */}
+        <ClayCard custom={4} className="md:col-span-6 flex flex-col items-center">
+          <h2 className="font-headline text-lg font-bold self-start mb-4">AI Accuracy</h2>
           <ConfidenceGauge score={report.ai_confidence_score} />
-        </HoverCard>
+          <p className="text-sm text-center mt-3" style={{ color: colors.textMuted }}>
+            Model trained on 4M+ hill climbs for maximum diagnostic precision.
+          </p>
+        </ClayCard>
 
-        {/* Card 6 — Checklist */}
-        <HoverCard custom={5}>
-          <SectionLabel>✅ अगले कदम (Next Steps)</SectionLabel>
+        {/* Card 6 — Add to Crew (Share) */}
+        <ClayCard custom={5} className="md:col-span-6">
+          <h2 className="font-headline text-lg font-bold mb-4">{racingLabels.share}</h2>
+          <div className="flex flex-col sm:flex-row gap-3">
+            <ShareButton summary={summaryText} onXP={handleAddXP} />
+          </div>
+          <p className="mt-3 text-xs text-center" style={{ color: colors.textMuted }}>
+            Share your telemetry with trusted pit crew members.
+          </p>
+        </ClayCard>
+
+        {/* Card 7 — Race Plan (Checklist) — full width */}
+        <ClayCard custom={6} className="md:col-span-12">
+          <SectionLabel icon="checklist">{racingLabels.checklist}</SectionLabel>
           <HealthChecklist items={checklist} onXP={handleAddXP} />
-        </HoverCard>
-
-        {/* Card 7 — Share (full width) */}
-        <HoverCard custom={6} style={{ gridColumn: "span 2", display: "flex", flexDirection: "column", alignItems: "center", gap: 12 }}>
-          <SectionLabel>📱 Share with Family</SectionLabel>
-          <ShareButton summary={summaryText} onXP={handleAddXP} />
-        </HoverCard>
-
+        </ClayCard>
       </div>
 
       {/* Doctor Chat */}

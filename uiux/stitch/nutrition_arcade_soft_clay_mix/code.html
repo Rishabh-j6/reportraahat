@@ -1,0 +1,345 @@
+<!DOCTYPE html>
+
+<html class="dark" lang="en"><head>
+<meta charset="utf-8"/>
+<meta content="width=device-width, initial-scale=1.0" name="viewport"/>
+<title>Nutrition Profile | Tactical Wellness</title>
+<script src="https://cdn.tailwindcss.com?plugins=forms,container-queries"></script>
+<link href="https://fonts.googleapis.com/css2?family=Plus+Jakarta+Sans:wght@400;500;600;700;800&amp;family=Be+Vietnam+Pro:wght@400;500;700;900&amp;family=Silkscreen:wght@400;700&amp;display=swap" rel="stylesheet"/>
+<link href="https://fonts.googleapis.com/css2?family=Material+Symbols+Outlined:wght,FILL@100..700,0..1&amp;display=swap" rel="stylesheet"/>
+<script id="tailwind-config">
+      tailwind.config = {
+        darkMode: "class",
+        theme: {
+          extend: {
+            colors: {
+              "on-surface-variant": "#dbc2b0",
+              "outline": "#a38d7c",
+              "error-container": "#93000a",
+              "surface-container-lowest": "#0d0d1a",
+              "surface-container-highest": "#343342",
+              "primary": "#ffc08d",
+              "on-primary-fixed": "#2e1500",
+              "surface-container": "#1e1e2c",
+              "tertiary-fixed-dim": "#4ae176",
+              "on-surface": "#e3e0f4",
+              "on-secondary-fixed-variant": "#2f2ebe",
+              "background": "#0D0D1A",
+              "tertiary-fixed": "#6bff8f",
+              "secondary-fixed-dim": "#c0c1ff",
+              "on-error-container": "#ffdad6",
+              "on-background": "#e3e0f4",
+              "secondary-container": "#3131c0",
+              "inverse-on-surface": "#2f2f3d",
+              "on-error": "#690005",
+              "surface-bright": "#383847",
+              "primary-container": "#ff9933",
+              "primary-fixed-dim": "#ffb77a",
+              "primary-fixed": "#ffdcc2",
+              "surface-variant": "#343342",
+              "on-tertiary-container": "#005020",
+              "on-secondary": "#1000a9",
+              "on-tertiary-fixed-variant": "#005321",
+              "secondary-fixed": "#e1e0ff",
+              "surface-tint": "#ffb77a",
+              "outline-variant": "#554336",
+              "surface-dim": "#12121f",
+              "secondary": "#38bdf8",
+              "on-primary-container": "#693800",
+              "inverse-surface": "#e3e0f4",
+              "tertiary-container": "#10b981",
+              "surface": "#12121f",
+              "surface-container-low": "#1a1a28",
+              "error": "#ffb4ab",
+              "on-secondary-container": "#b0b2ff",
+              "on-secondary-fixed": "#07006c",
+              "tertiary": "#10b981",
+              "on-tertiary-fixed": "#002109",
+              "on-tertiary": "#003915",
+              "on-primary": "#4c2700",
+              "surface-container-high": "#292937",
+              "on-primary-fixed-variant": "#6d3a00",
+              "inverse-primary": "#8f4e00",
+              "saffron": "#fbbf24"
+            },
+            fontFamily: {
+              "headline": ["Plus Jakarta Sans"],
+              "body": ["Be Vietnam Pro"],
+              "label": ["Be Vietnam Pro"],
+              "pixel": ["Silkscreen", "monospace"]
+            },
+            borderRadius: {"DEFAULT": "1rem", "lg": "20px", "xl": "20px", "full": "9999px"},
+            animation: {
+              'spring': 'spring 0.4s cubic-bezier(0.175, 0.885, 0.32, 1.275) forwards',
+              'pixel-float': 'pixel-float 3s ease-in-out infinite'
+            },
+            keyframes: {
+              spring: {
+                '0%': { transform: 'scale(0.9)' },
+                '100%': { transform: 'scale(1)' },
+              },
+              'pixel-float': {
+                '0%, 100%': { transform: 'translateY(0)' },
+                '50%': { transform: 'translateY(-10px)' },
+              }
+            }
+          },
+        },
+      }
+    </script>
+<style>
+        .starfield-bg {
+            background-image: radial-gradient(circle, rgba(255,255,255,0.05) 1px, transparent 1px);
+            background-size: 32px 32px;
+        }
+        .pixel-border {
+            box-shadow: 
+                0 -4px 0 0 #343342,
+                0 4px 0 0 #343342,
+                -4px 0 0 0 #343342,
+                4px 0 0 0 #343342;
+        }
+        .pixel-border-primary {
+            box-shadow: 
+                0 -4px 0 0 #ff9933,
+                0 4px 0 0 #ff9933,
+                -4px 0 0 0 #ff9933,
+                4px 0 0 0 #ff9933;
+        }
+        .clay-card {
+            box-shadow: inset 0 2px 4px rgba(255,255,255,0.08), 0 10px 30px rgba(0,0,0,0.4);
+            border-radius: 20px;
+        }
+        .radar-grid-aliased {
+            clip-path: polygon(50% 0%, 100% 38%, 82% 100%, 18% 100%, 0% 38%);
+            image-rendering: pixelated;
+        }
+        .pixel-glow-hover:hover {
+            box-shadow: 0 0 20px rgba(16, 185, 129, 0.5);
+            transition: box-shadow 0.2s cubic-bezier(0.175, 0.885, 0.32, 1.275);
+        }
+        .stepped-stroke {
+            filter: drop-shadow(0 0 0.5px white);
+        }
+        .no-scrollbar::-webkit-scrollbar {
+            display: none;
+        }
+        .no-scrollbar {
+            -ms-overflow-style: none;
+            scrollbar-width: none;
+        }
+    </style>
+</head>
+<body class="bg-background text-on-background font-body starfield-bg selection:bg-saffron selection:text-black">
+<!-- TopAppBar -->
+<header class="fixed top-0 w-full z-50 bg-[#0D0D1A]/80 backdrop-blur-xl border-b border-white/5 transition-all duration-200">
+<div class="flex justify-between items-center px-6 py-4 w-full max-w-screen-xl mx-auto">
+<h1 class="text-2xl font-black text-primary tracking-widest uppercase font-headline">Tactical Wellness</h1>
+<div class="flex items-center gap-4">
+<button class="material-symbols-outlined text-[#e3e0f4]/60 hover:bg-[#343342] transition-all duration-200 p-2 rounded-full active:scale-90" data-icon="account_circle">account_circle</button>
+</div>
+</div>
+</header>
+<main class="pt-24 pb-32 px-4 max-w-screen-xl mx-auto space-y-10">
+<!-- Hero: Pixel Radar & Stats -->
+<section class="grid grid-cols-1 lg:grid-cols-12 gap-8 items-stretch">
+<div class="lg:col-span-7 bg-surface-container clay-card p-10 flex flex-col justify-center relative overflow-hidden group">
+<div class="absolute top-6 left-8">
+<h2 class="font-headline font-extrabold text-saffron text-3xl tracking-tight">VANGARD NUTRITION</h2>
+<p class="text-on-surface-variant text-xs uppercase tracking-widest font-pixel">FUELING PROFILE</p>
+</div>
+<!-- Pixel Art Style Radar Chart -->
+<div class="mt-12 flex justify-center items-center h-80 relative">
+<!-- Radar Background Layers -->
+<div class="absolute inset-0 flex items-center justify-center opacity-10">
+<div class="w-64 h-64 border-4 border-dashed border-primary rounded-full animate-[spin_10s_linear_infinite]"></div>
+</div>
+<div class="relative w-64 h-64 bg-surface-container-highest/40 radar-grid-aliased flex items-center justify-center border-4 border-white/10">
+<!-- Active Data Shape with stepped stroke feel -->
+<div class="absolute inset-4 bg-tertiary/30 radar-grid-aliased border-4 border-tertiary shadow-[0_0_25px_rgba(16,185,129,0.3)] stepped-stroke"></div>
+<span class="material-symbols-outlined text-white text-6xl z-10 animate-pixel-float" data-icon="rocket_launch" style="font-variation-settings: 'FILL' 1;">rocket_launch</span>
+</div>
+<!-- Labels -->
+<div class="absolute top-0 text-[10px] font-pixel text-tertiary">PROTEIN</div>
+<div class="absolute bottom-0 text-[10px] font-pixel text-saffron">RECOVERY</div>
+<div class="absolute left-0 top-1/2 -translate-y-1/2 -translate-x-14 text-[10px] font-pixel text-secondary">VITAMINS</div>
+<div class="absolute right-0 top-1/2 -translate-y-1/2 translate-x-14 text-[10px] font-pixel text-primary-container">ENERGY</div>
+</div>
+</div>
+<!-- Side Stats Bento -->
+<div class="lg:col-span-5 grid grid-cols-2 gap-4">
+<div class="col-span-2 bg-gradient-to-br from-saffron to-primary-container p-8 rounded-xl shadow-2xl flex flex-col justify-between hover:scale-[1.01] transition-transform duration-300">
+<div>
+<p class="text-on-primary-container font-pixel text-[10px] uppercase tracking-tighter">Current Level</p>
+<h3 class="text-5xl font-pixel font-bold text-on-primary-fixed leading-none">LVL 42</h3>
+</div>
+<div class="mt-6">
+<div class="flex justify-between font-pixel text-[10px] text-on-primary-container mb-2">
+<span>XP TO NEXT LEVEL</span>
+<span>840 / 1000</span>
+</div>
+<div class="h-5 bg-black/20 rounded-lg overflow-hidden p-1">
+<div class="h-full bg-white rounded-md" style="width: 84%"></div>
+</div>
+</div>
+</div>
+<div class="bg-surface-container clay-card p-6 flex flex-col items-center justify-center text-center gap-2 hover:translate-y-[-4px] transition-transform">
+<span class="material-symbols-outlined text-secondary text-4xl" data-icon="water_drop" style="font-variation-settings: 'FILL' 1;">water_drop</span>
+<p class="text-white font-pixel text-xl">2.4L</p>
+<p class="text-on-surface-variant text-[10px] font-pixel uppercase">Hydrate</p>
+</div>
+<div class="bg-surface-container clay-card p-6 flex flex-col items-center justify-center text-center gap-2 hover:translate-y-[-4px] transition-transform">
+<span class="material-symbols-outlined text-tertiary text-4xl" data-icon="bolt" style="font-variation-settings: 'FILL' 1;">bolt</span>
+<p class="text-white font-pixel text-xl">1,850</p>
+<p class="text-on-surface-variant text-[10px] font-pixel uppercase">Burn</p>
+</div>
+</div>
+</section>
+<!-- Category Filter Chips -->
+<nav class="flex gap-4 overflow-x-auto pb-4 no-scrollbar">
+<button class="px-8 py-3 rounded-xl bg-saffron text-black font-pixel text-[10px] uppercase shadow-lg shadow-saffron/20 whitespace-nowrap active:scale-95 transition-all">All Fuel</button>
+<button class="px-8 py-3 rounded-xl bg-surface-container text-on-surface-variant font-pixel text-[10px] uppercase hover:bg-surface-container-highest transition-all whitespace-nowrap border border-white/5 active:scale-95">Proteins</button>
+<button class="px-8 py-3 rounded-xl bg-surface-container text-on-surface-variant font-pixel text-[10px] uppercase hover:bg-surface-container-highest transition-all whitespace-nowrap border border-white/5 active:scale-95">Energizers</button>
+<button class="px-8 py-3 rounded-xl bg-surface-container text-on-surface-variant font-pixel text-[10px] uppercase hover:bg-surface-container-highest transition-all whitespace-nowrap border border-white/5 active:scale-95">Supplements</button>
+</nav>
+<!-- Food Cards Grid -->
+<section class="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-8">
+<!-- Food Card 1 -->
+<div class="group bg-surface-container clay-card overflow-hidden hover:scale-[1.03] hover:translate-y-[-8px] transition-all duration-300 cursor-pointer pixel-glow-hover">
+<div class="h-52 bg-tertiary/10 relative overflow-hidden">
+<img alt="Vibrant salad bowl" class="w-full h-full object-cover mix-blend-overlay group-hover:scale-110 transition-transform duration-700" src="https://lh3.googleusercontent.com/aida-public/AB6AXuDaTe4Ve40q5hRUuIkUE5UTNN5LpVUKy9Ksune1bpMDsXggxwBsAQy3bQyjUpIOSdutMPBwEEobRK3KmwatBMmTk4ZeWKB0OMhPUYVpqaQ89MEkOePvm52kpEfCuF9FLW1W11kTos8DkaAagqhf8OrFN8nzrYbLIgWI68JfxSrhlSP8SRGXLioeLDru_a88oGnxLox-nCTah-FoOWC2xOHw9t8ePZ8hAG-x-qQdxpCacncFSzlPQ5yGkdTu7Joi1n0lUtGSVyWetx0"/>
+<div class="absolute top-4 right-4 bg-tertiary-container text-white text-[10px] font-pixel px-4 py-2 rounded-lg uppercase shadow-xl">GROWTH +12</div>
+<div class="absolute inset-0 bg-gradient-to-t from-surface-container to-transparent opacity-80"></div>
+</div>
+<div class="p-8">
+<div class="flex justify-between items-start mb-3">
+<h4 class="text-2xl font-headline font-bold text-white">Iron-Leaf Greens</h4>
+<span class="material-symbols-outlined text-tertiary text-3xl" data-icon="nutrition">nutrition</span>
+</div>
+<p class="text-on-surface-variant text-sm mb-6 leading-relaxed">High-density micronutrients for muscular endurance and faster cellular repair.</p>
+<div class="flex justify-between items-center">
+<div class="flex gap-2">
+<span class="bg-surface-container-highest/50 border border-white/5 px-3 py-1.5 rounded-lg text-[10px] font-pixel text-on-surface uppercase">420 CAL</span>
+</div>
+<button class="w-12 h-12 rounded-lg bg-tertiary text-black flex items-center justify-center pixel-border-primary hover:bg-tertiary-fixed transition-all active:scale-90">
+<span class="material-symbols-outlined font-bold" data-icon="add">add</span>
+</button>
+</div>
+</div>
+</div>
+<!-- Food Card 2 -->
+<div class="group bg-surface-container clay-card overflow-hidden hover:scale-[1.03] hover:translate-y-[-8px] transition-all duration-300 cursor-pointer pixel-glow-hover border-2 border-saffron/20">
+<div class="h-52 bg-primary/10 relative overflow-hidden">
+<img alt="Gourmet pizza slice" class="w-full h-full object-cover mix-blend-overlay group-hover:scale-110 transition-transform duration-700" src="https://lh3.googleusercontent.com/aida-public/AB6AXuC3soGDcBkc2tV9PCI8CDp7Gl34OO7UsDbhQ2jXJURDH3GVSwlt14TkEaf9WD1YBZ4dNvRVDJQ31Ae8nPou0X_JTDZqe8YZ48jJvogbaCFkLm0S83wkGq9zS0YEk3KuhmvVwCRgAOzSTk5x9w7yJfnrfApb_OVwf8lg8REN1sX5UQrak2LtYQVvsYSQPIU7ovRiqa_S3LwIbuWZuJwqgxVypIGH1SRugMTr-OlqwQkVLYpdcMGl5sUr6rAjyQLboCwkAbcuNkglAqA"/>
+<div class="absolute top-4 right-4 bg-saffron text-black text-[10px] font-pixel px-4 py-2 rounded-lg uppercase shadow-xl">STAMINA +25</div>
+<div class="absolute inset-0 bg-gradient-to-t from-surface-container to-transparent opacity-80"></div>
+</div>
+<div class="p-8">
+<div class="flex justify-between items-start mb-3">
+<h4 class="text-2xl font-headline font-bold text-white">Macro-Load Fuel</h4>
+<span class="material-symbols-outlined text-saffron text-3xl" data-icon="local_fire_department">local_fire_department</span>
+</div>
+<p class="text-on-surface-variant text-sm mb-6 leading-relaxed">Balanced carb-loading matrix optimized for peak cardiovascular output.</p>
+<div class="flex justify-between items-center">
+<div class="flex gap-2">
+<span class="bg-surface-container-highest/50 border border-white/5 px-3 py-1.5 rounded-lg text-[10px] font-pixel text-on-surface uppercase">850 CAL</span>
+</div>
+<button class="w-12 h-12 rounded-lg bg-saffron text-black flex items-center justify-center pixel-border-primary hover:brightness-110 transition-all active:scale-90">
+<span class="material-symbols-outlined font-bold" data-icon="add">add</span>
+</button>
+</div>
+</div>
+</div>
+<!-- Food Card 3 -->
+<div class="group bg-surface-container clay-card overflow-hidden hover:scale-[1.03] hover:translate-y-[-8px] transition-all duration-300 cursor-pointer pixel-glow-hover">
+<div class="h-52 bg-secondary/10 relative overflow-hidden">
+<img alt="Healthy blue smoothie" class="w-full h-full object-cover mix-blend-overlay group-hover:scale-110 transition-transform duration-700" src="https://lh3.googleusercontent.com/aida-public/AB6AXuAktSXppDqvq361kqStvDFXxeQftQRWM9-8F0ANsASSToGkNL2ienk7sWlhDN03JokUYkvKgVpbtH2qgy1NPDVek9wqX828qPknrIs79WcHAzXGbCdIS2bKiDsbGOgjL90EEDvXRfy3Z6sXW8Kpjie8-aEju3KKEY8Ixpk6krePRtK8h9-mPQ3eKhp8bL_4zqn6tDLJWIE8Pvj_bzlHSw8WUOI8w8gLMODNzlu-2QGaGohhsw3wPH8CZwuUk2NafiuZbu6SbFiC9vU"/>
+<div class="absolute top-4 right-4 bg-secondary text-black text-[10px] font-pixel px-4 py-2 rounded-lg uppercase shadow-xl">ZEN +10</div>
+<div class="absolute inset-0 bg-gradient-to-t from-surface-container to-transparent opacity-80"></div>
+</div>
+<div class="p-8">
+<div class="flex justify-between items-start mb-3">
+<h4 class="text-2xl font-headline font-bold text-white">Blue Sky Serum</h4>
+<span class="material-symbols-outlined text-secondary text-3xl" data-icon="auto_awesome">auto_awesome</span>
+</div>
+<p class="text-on-surface-variant text-sm mb-6 leading-relaxed">Antioxidant blast to reduce systemic inflammation after high-intensity climbs.</p>
+<div class="flex justify-between items-center">
+<div class="flex gap-2">
+<span class="bg-surface-container-highest/50 border border-white/5 px-3 py-1.5 rounded-lg text-[10px] font-pixel text-on-surface uppercase">180 CAL</span>
+</div>
+<button class="w-12 h-12 rounded-lg bg-saffron text-black flex items-center justify-center pixel-border-primary hover:brightness-110 transition-all active:scale-90">
+<span class="material-symbols-outlined font-bold" data-icon="add">add</span>
+</button>
+</div>
+</div>
+</div>
+</section>
+<!-- Floating Action Button for Adding Custom Food -->
+<div class="fixed bottom-32 lg:bottom-12 right-6 lg:right-12 z-40">
+<button class="w-16 h-16 rounded-xl bg-saffron text-black shadow-[0_10px_30px_rgba(251,191,36,0.4)] flex items-center justify-center hover:scale-110 hover:rotate-3 active:scale-90 transition-all pixel-border-primary group">
+<span class="material-symbols-outlined text-3xl font-bold transition-transform group-hover:scale-110" data-icon="restaurant_menu">restaurant_menu</span>
+</button>
+</div>
+</main>
+<!-- SideNavBar (Hidden on small screens) -->
+<aside class="hidden lg:flex fixed left-0 top-0 h-full w-80 bg-[#0D0D1A] rounded-r-[3rem] shadow-2xl flex-col p-8 z-50 border-r border-white/5">
+<div class="mb-12">
+<div class="flex items-center gap-5 p-4 bg-white/5 rounded-2xl clay-card">
+<div class="w-14 h-14 rounded-xl bg-tertiary flex items-center justify-center overflow-hidden border-2 border-white/10">
+<img alt="Dr Raahat" class="w-full h-full object-cover" src="https://lh3.googleusercontent.com/aida-public/AB6AXuCsF6piEpb6vVt8NTCFhae93plIpOwajFKb5VELfHZ09hXg53W5pk6SgjtNGexDRqirknOoVn-XN7sN7okHsayL5pd5Zdj6iGle-6ZzrBeBYPIAGQ4epztmKJ9-TT9m2m-UG6ZeORhdlPVtCVk7PC7hHCtnQFdF0zi9YMfd3VkRDcZ5gQW1ByGSRDtM2S9ETdf_mGAn8IKUPWC2qpSl2INQ3vthw1H-2ATnSVOBjhXvCzKVr3LjQXqHMhBIqb5bH9--UPn0nazjiGw"/>
+</div>
+<div>
+<h5 class="text-tertiary font-bold font-headline text-lg">Dr. Raahat</h5>
+<p class="text-on-surface-variant text-[10px] font-pixel uppercase tracking-widest">CELESTIAL GUIDE</p>
+</div>
+</div>
+</div>
+<nav class="flex-1 space-y-3">
+<a class="flex items-center gap-4 p-4 rounded-xl text-white/70 hover:bg-white/5 hover:translate-x-3 transition-all group font-headline font-semibold" href="#">
+<span class="material-symbols-outlined" data-icon="smart_toy">smart_toy</span>
+<span>Dr. Raahat AI</span>
+</a>
+<a class="flex items-center gap-4 p-4 rounded-xl text-white/70 hover:bg-white/5 hover:translate-x-3 transition-all group font-headline font-semibold" href="#">
+<span class="material-symbols-outlined" data-icon="description">description</span>
+<span>Daily Briefing</span>
+</a>
+<a class="flex items-center gap-4 p-4 rounded-xl bg-white/10 text-saffron font-headline font-bold border-l-4 border-saffron" href="#">
+<span class="material-symbols-outlined" data-icon="shelves">shelves</span>
+<span>Wellness Vault</span>
+</a>
+<a class="flex items-center gap-4 p-4 rounded-xl text-white/70 hover:bg-white/5 hover:translate-x-3 transition-all group font-headline font-semibold" href="#">
+<span class="material-symbols-outlined" data-icon="self_improvement">self_improvement</span>
+<span>Meditation</span>
+</a>
+<a class="flex items-center gap-4 p-4 rounded-xl text-white/70 hover:bg-white/5 hover:translate-x-3 transition-all group font-headline font-semibold" href="#">
+<span class="material-symbols-outlined" data-icon="settings">settings</span>
+<span>Settings</span>
+</a>
+</nav>
+<button class="mt-auto bg-tertiary text-black font-pixel text-[10px] py-5 rounded-xl flex items-center justify-center gap-3 hover:brightness-110 active:scale-95 transition-all pixel-border-primary">
+<span class="material-symbols-outlined" data-icon="chat">chat</span>
+            CONSULT DR. RAAHAT
+        </button>
+</aside>
+<!-- BottomNavBar (Visible only on mobile) -->
+<nav class="lg:hidden fixed bottom-0 w-full z-50 bg-[#0D0D1A]/90 backdrop-blur-2xl border-t border-white/5">
+<div class="flex justify-around items-center px-6 pb-8 pt-4 w-full">
+<a class="flex flex-col items-center justify-center text-white/40 hover:text-saffron transition-all font-pixel text-[8px] uppercase font-bold" href="#">
+<span class="material-symbols-outlined mb-1" data-icon="home_health">home_health</span>
+<span>Home</span>
+</a>
+<a class="flex flex-col items-center justify-center bg-saffron text-black rounded-xl p-4 shadow-xl font-pixel text-[8px] uppercase font-bold pixel-border-primary" href="#">
+<span class="material-symbols-outlined" data-icon="temp_preferences_custom" style="font-variation-settings: 'FILL' 1;">temp_preferences_custom</span>
+<span>Vitality</span>
+</a>
+<a class="flex flex-col items-center justify-center text-white/40 hover:text-saffron transition-all font-pixel text-[8px] uppercase font-bold" href="#">
+<span class="material-symbols-outlined mb-1" data-icon="military_tech">military_tech</span>
+<span>Quests</span>
+</a>
+<a class="flex flex-col items-center justify-center text-white/40 hover:text-saffron transition-all font-pixel text-[8px] uppercase font-bold" href="#">
+<span class="material-symbols-outlined mb-1" data-icon="self_care">self_care</span>
+<span>Sanctuary</span>
+</a>
+</div>
+</nav>
+</body></html>

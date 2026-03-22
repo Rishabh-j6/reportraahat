@@ -1,284 +1,316 @@
 "use client";
 
-import { useState } from "react";
+import { useState, useEffect, useRef } from "react";
 import { motion, AnimatePresence } from "framer-motion";
-import { LineChart, Line, XAxis, Tooltip, ResponsiveContainer } from "recharts";
 import { useGUCStore } from "@/lib/store";
-import MoodCheckIn from "@/components/MoodCheckIn";
-import BreathingWidget from "@/components/BreathingWidget";
-import { PageShell } from "@/components/ui";
+import { colors, racingLabels } from "@/lib/tokens";
 
-const AFFIRMATIONS = {
-  high_stress: [
-    "You came to the right place. Take 5 slow breaths right now. 💙",
-    "Recovery is not a straight line. Every small step counts.",
-    "Dr. Raahat believes in you. One breath at a time.",
-  ],
-  normal: [
-    "You're making progress every single day. 🌱",
-    "Consistency beats intensity. You're building healthy habits.",
-    "Your body is doing its best. Support it with rest and good food.",
-  ],
-  great: [
-    "You're thriving! Keep this momentum. 🌟",
-    "High energy day — channel it into your health goals!",
-    "This is what healing looks like. Celebrate the small wins.",
-  ],
-};
+type WellnessTab = "CHECK-IN" | "BREATHE" | "STATS";
 
-function getAffirmation(stress: number, sleep: number): string {
-  const pool =
-    stress <= 3 ? AFFIRMATIONS.high_stress
-    : stress >= 8 && sleep >= 7 ? AFFIRMATIONS.great
-    : AFFIRMATIONS.normal;
-  return pool[Math.floor(Math.random() * pool.length)];
-}
+const BREATHE_PHASES = [
+  { label: "INHALE", seconds: 4, instruction: "Breathe in deeply through your nose" },
+  { label: "HOLD", seconds: 7, instruction: "Hold your breath — feel the calm" },
+  { label: "EXHALE", seconds: 8, instruction: "Slowly breathe out through your mouth" },
+];
 
-const MoodTooltip = ({ active, payload }: any) => {
-  if (!active || !payload?.length) return null;
-  return (
-    <div className="bg-[#1a1a2e] border border-white/10 rounded-lg px-2.5 py-1.5 text-[11px]">
-      <div style={{ color: "#FF9933" }}>Stress: {payload[0]?.value}</div>
-      <div style={{ color: "#22C55E" }}>Sleep: {payload[1]?.value}</div>
-    </div>
-  );
-};
-
-type Tab = "mood" | "breathe" | "history";
+const AFFIRMATIONS = [
+  "LEVEL UP YOUR PEACE! Take a breath, player. You're doing amazing today!",
+  "Your engine runs better when you rest. Pit stops win races!",
+  "Champions take care of their mental oil pressure.",
+  "Deep breaths = turbo boost for your mind.",
+];
 
 export default function WellnessPage() {
+  const profile = useGUCStore((s) => s.profile);
   const mentalWellness = useGUCStore((s) => s.mentalWellness);
-  const latestReport   = useGUCStore((s) => s.latestReport);
+  const setMentalWellness = useGUCStore((s) => s.mentalWellness);
+  const addXP = useGUCStore((s) => s.addXP);
 
-  const [activeTab, setActiveTab] = useState<Tab>("mood");
+  const [tab, setTab] = useState<WellnessTab>("CHECK-IN");
+  const [stress, setStress] = useState(mentalWellness.stressLevel);
+  const [sleep, setSleep] = useState(mentalWellness.sleepQuality);
+  const [saved, setSaved] = useState(false);
 
-  const affirmation = getAffirmation(mentalWellness.stressLevel, mentalWellness.sleepQuality);
+  // Breathing
+  const [breathing, setBreathing] = useState(false);
+  const [phase, setPhase] = useState(0);
+  const [countdown, setCountdown] = useState(0);
+  const [cycles, setCycles] = useState(0);
+  const timerRef = useRef<NodeJS.Timeout | null>(null);
 
-  const moodChartData = mentalWellness.moodHistory.slice(-10).map((entry) => ({
-    date: new Date(entry.date).toLocaleDateString("en-IN", { day: "2-digit", month: "short" }),
-    stress: entry.stress,
-    sleep: entry.sleep,
-  }));
+  // Affirmation
+  const [affirmation] = useState(() => AFFIRMATIONS[Math.floor(Math.random() * AFFIRMATIONS.length)]);
 
-  const recentHistory = mentalWellness.moodHistory.slice(-7);
-  const avgStress = recentHistory.length
-    ? Math.round(recentHistory.reduce((s, e) => s + e.stress, 0) / recentHistory.length)
-    : mentalWellness.stressLevel;
-  const avgSleep = recentHistory.length
-    ? (recentHistory.reduce((s, e) => s + e.sleep, 0) / recentHistory.length).toFixed(1)
-    : mentalWellness.sleepQuality;
+  const stressLabel = stress <= 3 ? "MELLOW" : stress <= 6 ? "MODERATE" : "HIGH RPM";
+  const sleepHours = Math.floor(sleep * 1.2);
+  const sleepMins = Math.round((sleep * 1.2 - sleepHours) * 60);
 
-  const TABS: { key: Tab; label: string; icon: string }[] = [
-    { key: "mood",    label: "Check-in", icon: "😊" },
-    { key: "breathe", label: "Breathe",  icon: "🫁" },
-    { key: "history", label: "History",  icon: "📈" },
-  ];
+  const handleSaveCheckIn = () => {
+    setMentalWellness({ stressLevel: stress, sleepQuality: sleep });
+    addXP(5);
+    setSaved(true);
+    setTimeout(() => setSaved(false), 2000);
+  };
+
+  // Breathing timer
+  useEffect(() => {
+    if (!breathing) return;
+    setCountdown(BREATHE_PHASES[phase].seconds);
+    timerRef.current = setInterval(() => {
+      setCountdown((c) => {
+        if (c <= 1) {
+          setPhase((p) => {
+            const next = (p + 1) % BREATHE_PHASES.length;
+            if (next === 0) setCycles((cy) => cy + 1);
+            return next;
+          });
+          return BREATHE_PHASES[(phase + 1) % BREATHE_PHASES.length].seconds;
+        }
+        return c - 1;
+      });
+    }, 1000);
+    return () => { if (timerRef.current) clearInterval(timerRef.current); };
+  }, [breathing, phase]);
+
+  const toggleBreathing = () => {
+    if (breathing) {
+      setBreathing(false);
+      setPhase(0);
+      setCountdown(0);
+      if (cycles >= 1) { addXP(10); }
+    } else {
+      setBreathing(true);
+      setCycles(0);
+    }
+  };
 
   return (
-    <PageShell>
+    <div className="min-h-screen starfield" style={{ background: "#0f4f5c" }}>
+      {/* Teal ambient glow */}
+      <div className="fixed inset-0 pointer-events-none"
+        style={{ background: "radial-gradient(ellipse at 50% 0%, rgba(6,182,212,0.08) 0%, transparent 60%)" }} />
 
-        {/* Header */}
-        <motion.div initial={{ opacity: 0, y: -12 }} animate={{ opacity: 1, y: 0 }} className="mb-5">
-          <div className="flex items-center gap-3 mb-1">
-            <span className="text-2xl">🧘</span>
-            <h1 className="text-xl font-bold tracking-tight">Mental Wellness</h1>
+      <div className="relative max-w-2xl mx-auto px-4 pt-24 pb-32">
+
+        {/* Affirmation card — Dr. Raahat */}
+        <motion.div initial={{ opacity: 0, y: 12 }} animate={{ opacity: 1, y: 0 }}
+          className="mb-6 p-5 rounded-xl clay-card flex items-start gap-4"
+          style={{ background: "#22C55E", border: "1px solid rgba(255,255,255,0.15)" }}>
+          <div className="w-14 h-14 rounded-lg flex-shrink-0 flex items-center justify-center text-2xl"
+            style={{ background: "rgba(0,0,0,0.15)" }}>
+            🧑‍⚕️
           </div>
-          <p className="text-white/40 text-sm">Recovery is physical AND mental</p>
-        </motion.div>
-
-        {/* Affirmation */}
-        <motion.div
-          initial={{ opacity: 0, y: 10 }} animate={{ opacity: 1, y: 0 }} transition={{ delay: 0.1 }}
-          className="mb-5 p-4 rounded-2xl bg-gradient-to-br from-indigo-500/10 to-purple-500/5 border border-indigo-500/15"
-        >
-          <p className="text-indigo-200/80 text-sm leading-relaxed italic">"{affirmation}"</p>
-          <p className="text-indigo-400/40 text-xs mt-2">— Dr. Raahat</p>
-        </motion.div>
-
-        {/* Stats strip */}
-        <motion.div
-          initial={{ opacity: 0 }} animate={{ opacity: 1 }} transition={{ delay: 0.15 }}
-          className="flex gap-2 mb-5"
-        >
-          {[
-            { label: "Avg Stress", value: `${avgStress}/10`, color: avgStress <= 3 ? "#EF4444" : avgStress >= 7 ? "#22C55E" : "#FF9933", icon: "🧠" },
-            { label: "Avg Sleep",  value: `${avgSleep}/10`,  color: Number(avgSleep) >= 7 ? "#22C55E" : Number(avgSleep) <= 4 ? "#EF4444" : "#FF9933", icon: "🌙" },
-            { label: "Streak",     value: `${mentalWellness.moodHistory.length}d`, color: "#6366F1", icon: "🔥" },
-          ].map((stat) => (
-            <div key={stat.label} className="flex-1 bg-white/[0.04] border border-white/[0.07] rounded-xl py-2.5 px-3 text-center">
-              <div className="text-base mb-0.5">{stat.icon}</div>
-              <div className="font-bold text-sm" style={{ color: stat.color }}>{stat.value}</div>
-              <div className="text-white/30 text-[10px]">{stat.label}</div>
-            </div>
-          ))}
-        </motion.div>
-
-        {/* Report mental health note */}
-        {latestReport && mentalWellness.stressLevel <= 4 && (
-          <motion.div
-            initial={{ opacity: 0 }} animate={{ opacity: 1 }}
-            className="mb-5 p-3.5 rounded-xl bg-orange-500/8 border border-orange-500/15"
-          >
-            <p className="text-orange-300/70 text-xs leading-relaxed">
-              🩺 Your recent report showed{" "}
-              <strong className="text-orange-300/90">
-                {latestReport.severity_level.replace("_", " ").toLowerCase()}
-              </strong>
-              . Medical stress is real. Talking to Dr. Raahat in the chat can help reduce anxiety about your results.
+          <div>
+            <p className="text-sm font-bold text-white leading-snug">&ldquo;{affirmation}&rdquo;</p>
+            <p className="text-[10px] font-mono uppercase tracking-widest mt-2" style={{ color: "rgba(255,255,255,0.6)" }}>
+              Mindset Coach · Ra-a-hat
             </p>
-          </motion.div>
-        )}
+          </div>
+        </motion.div>
 
-        {/* Tabs — animated sliding indicator */}
-        <div className="flex gap-0 mb-5 p-1 bg-white/[0.04] rounded-xl border border-white/[0.07] relative">
-          {TABS.map((tab) => (
-            <button
-              key={tab.key}
-              onClick={() => setActiveTab(tab.key)}
-              className="flex-1 flex items-center justify-center gap-1.5 py-2 rounded-lg text-xs font-medium transition-colors relative z-10"
+        {/* Quick stats row */}
+        <div className="grid grid-cols-3 gap-3 mb-6">
+          <motion.div initial={{ opacity: 0, y: 10 }} animate={{ opacity: 1, y: 0 }} transition={{ delay: 0.05 }}
+            className="rounded-xl p-3" style={{ background: "#22C55E" }}>
+            <p className="text-[10px] font-bold uppercase tracking-wider" style={{ color: "rgba(255,255,255,0.7)" }}>Stress</p>
+            <p className="text-lg font-headline font-black text-white">{stressLabel}</p>
+          </motion.div>
+          <motion.div initial={{ opacity: 0, y: 10 }} animate={{ opacity: 1, y: 0 }} transition={{ delay: 0.1 }}
+            className="rounded-xl p-3" style={{ background: "#06B6D4" }}>
+            <p className="text-[10px] font-bold uppercase tracking-wider" style={{ color: "rgba(255,255,255,0.7)" }}>Sleep</p>
+            <p className="text-lg font-headline font-black text-white">{sleepHours}H {sleepMins}M</p>
+            <span className="material-symbols-outlined absolute top-2 right-2 text-sm" style={{ color: "rgba(255,255,255,0.5)" }}>dark_mode</span>
+          </motion.div>
+          <motion.div initial={{ opacity: 0, y: 10 }} animate={{ opacity: 1, y: 0 }} transition={{ delay: 0.15 }}
+            className="rounded-xl p-3" style={{ background: "#FF9933" }}>
+            <p className="text-[10px] font-bold uppercase tracking-wider" style={{ color: "rgba(255,255,255,0.7)" }}>Streak</p>
+            <p className="text-lg font-headline font-black text-white">{mentalWellness.streak || 0} DAYS</p>
+          </motion.div>
+        </div>
+
+        {/* Tab bar — retro arcade style */}
+        <div className="flex gap-1 mb-6 p-1 rounded-xl" style={{ background: colors.surfaceContainerHigh }}>
+          {(["CHECK-IN", "BREATHE", "STATS"] as WellnessTab[]).map((t) => (
+            <motion.button key={t} onClick={() => setTab(t)}
+              className="flex-1 py-2.5 rounded-lg text-xs font-black uppercase tracking-wider flex items-center justify-center gap-1.5 transition-all"
               style={{
-                color: activeTab === tab.key ? "white" : "rgba(255,255,255,0.35)",
+                background: tab === t ? (t === "CHECK-IN" ? "#22C55E" : t === "BREATHE" ? "#06B6D4" : colors.surfaceVariant) : "transparent",
+                color: tab === t ? "#ffffff" : colors.textFaint,
               }}
+              whileTap={{ scale: 0.97 }}
             >
-              {activeTab === tab.key && (
-                <motion.div
-                  layoutId="wellness-tab-bg"
-                  className="absolute inset-0 rounded-lg"
-                  style={{ background: "rgba(255,255,255,0.1)" }}
-                  transition={{ type: "spring", stiffness: 400, damping: 35 }}
-                />
-              )}
-              <span className="relative z-10">{tab.icon}</span>
-              <span className="relative z-10">{tab.label}</span>
-            </button>
+              {t === "CHECK-IN" && "😊"}{t === "BREATHE" && "🫁"}{t === "STATS" && "📊"} {t}
+            </motion.button>
           ))}
         </div>
 
         {/* Tab content */}
         <AnimatePresence mode="wait">
-
-          {activeTab === "mood" && (
-            <motion.div
-              key="mood"
-              initial={{ opacity: 0, x: -10 }} animate={{ opacity: 1, x: 0 }} exit={{ opacity: 0, x: 10 }}
-              transition={{ duration: 0.18 }}
-              className="space-y-4"
-            >
-              <MoodCheckIn />
-              <div className="bg-white/[0.03] border border-white/[0.07] rounded-2xl p-4">
-                <p className="text-white/40 text-[10px] uppercase tracking-widest mb-3">Why Sleep Matters for Recovery</p>
-                <div className="space-y-2.5">
-                  {[
-                    { icon: "🩸", text: "Iron is absorbed better when you sleep 7+ hours" },
-                    { icon: "🦴", text: "Bone repair and Vitamin D activation happen during deep sleep" },
-                    { icon: "🛡️", text: "Immune system strengthens during sleep cycles" },
-                    { icon: "🧠", text: "Stress hormones drop by 30% after a full night of sleep" },
-                  ].map((tip, i) => (
-                    <div key={i} className="flex gap-2.5 items-start">
-                      <span className="text-sm flex-shrink-0 mt-0.5">{tip.icon}</span>
-                      <p className="text-white/45 text-xs leading-relaxed">{tip.text}</p>
-                    </div>
-                  ))}
+          {tab === "CHECK-IN" && (
+            <motion.div key="checkin" initial={{ opacity: 0, x: -20 }} animate={{ opacity: 1, x: 0 }} exit={{ opacity: 0, x: 20 }}>
+              <div className="rounded-2xl p-6 clay-card space-y-6" style={{ background: colors.surfaceContainer }}>
+                <h3 className="font-headline text-lg font-bold text-white">Daily Check-In</h3>
+                {/* Stress */}
+                <div>
+                  <div className="flex justify-between mb-2">
+                    <label className="text-xs font-bold uppercase tracking-wider" style={{ color: colors.textMuted }}>Stress Level</label>
+                    <span className="text-xs font-bold" style={{ color: stress <= 3 ? "#22C55E" : stress <= 6 ? "#F59E0B" : "#EF4444" }}>
+                      {stressLabel} ({stress}/10)
+                    </span>
+                  </div>
+                  <input type="range" min={1} max={10} value={stress} onChange={(e) => setStress(Number(e.target.value))}
+                    className="w-full h-2 rounded-full appearance-none cursor-pointer"
+                    style={{ background: `linear-gradient(90deg, #22C55E ${(stress - 1) * 11.1}%, ${colors.surfaceContainerHigh} ${(stress - 1) * 11.1}%)` }}
+                  />
+                  <div className="flex justify-between text-[10px] mt-1" style={{ color: colors.textFaint }}>
+                    <span>😌 Calm</span><span>😰 Stressed</span>
+                  </div>
                 </div>
+                {/* Sleep */}
+                <div>
+                  <div className="flex justify-between mb-2">
+                    <label className="text-xs font-bold uppercase tracking-wider" style={{ color: colors.textMuted }}>Sleep Quality</label>
+                    <span className="text-xs font-bold" style={{ color: "#06B6D4" }}>
+                      {sleep <= 3 ? "Poor" : sleep <= 6 ? "Okay" : "Great"} ({sleep}/10)
+                    </span>
+                  </div>
+                  <input type="range" min={1} max={10} value={sleep} onChange={(e) => setSleep(Number(e.target.value))}
+                    className="w-full h-2 rounded-full appearance-none cursor-pointer"
+                    style={{ background: `linear-gradient(90deg, #06B6D4 ${(sleep - 1) * 11.1}%, ${colors.surfaceContainerHigh} ${(sleep - 1) * 11.1}%)` }}
+                  />
+                  <div className="flex justify-between text-[10px] mt-1" style={{ color: colors.textFaint }}>
+                    <span>😫 Terrible</span><span>😴 Amazing</span>
+                  </div>
+                </div>
+                {/* Save */}
+                <motion.button onClick={handleSaveCheckIn}
+                  className="w-full py-3 rounded-xl text-sm font-black uppercase tracking-wider"
+                  style={{
+                    background: saved ? `${colors.tertiary}15` : "#22C55E",
+                    color: saved ? colors.tertiary : "#ffffff",
+                    border: saved ? `1px solid ${colors.tertiary}30` : "none",
+                  }}
+                  whileTap={{ scale: 0.97 }}>
+                  {saved ? "✓ LOGGED · +5 XP" : "LOG CHECK-IN · +5 XP"}
+                </motion.button>
               </div>
             </motion.div>
           )}
 
-          {activeTab === "breathe" && (
-            <motion.div
-              key="breathe"
-              initial={{ opacity: 0, x: -10 }} animate={{ opacity: 1, x: 0 }} exit={{ opacity: 0, x: 10 }}
-              transition={{ duration: 0.18 }}
-              className="space-y-4"
-            >
-              <BreathingWidget />
-              <div className="bg-white/[0.03] border border-white/[0.07] rounded-2xl p-4">
-                <p className="text-white/40 text-[10px] uppercase tracking-widest mb-3">Why 4-7-8 Breathing Works</p>
-                <div className="grid grid-cols-3 gap-2 text-center">
-                  {[
-                    { phase: "4", label: "Inhale", color: "#FF9933", note: "Activates parasympathetic system" },
-                    { phase: "7", label: "Hold",   color: "#6366F1", note: "Oxygen saturates bloodstream" },
-                    { phase: "8", label: "Exhale", color: "#22C55E", note: "CO₂ released, stress drops" },
-                  ].map((p) => (
-                    <div key={p.label} className="bg-white/[0.03] rounded-xl p-3 border border-white/[0.05]">
-                      <div className="text-2xl font-bold mb-1" style={{ color: p.color }}>{p.phase}s</div>
-                      <div className="text-white/60 text-[10px] font-medium mb-1">{p.label}</div>
-                      <div className="text-white/25 text-[9px] leading-snug">{p.note}</div>
-                    </div>
-                  ))}
-                </div>
-                <p className="text-white/25 text-[10px] text-center mt-3">
-                  Practice 2× daily for 4 weeks to significantly reduce chronic stress
+          {tab === "BREATHE" && (
+            <motion.div key="breathe" initial={{ opacity: 0, x: -20 }} animate={{ opacity: 1, x: 0 }} exit={{ opacity: 0, x: 20 }}>
+              <div className="text-center mb-6">
+                <h2 className="font-headline text-3xl font-black tracking-tight" style={{ color: "#ffffff", fontFamily: "monospace" }}>
+                  4-7-8 SYNC
+                </h2>
+                <p className="text-xs font-bold uppercase tracking-widest mt-1" style={{ color: "#22C55E" }}>
+                  Calm the engine. Reset the race.
                 </p>
               </div>
+
+              {/* Breathing circle */}
+              <div className="flex justify-center mb-8">
+                <div className="relative w-56 h-56 flex items-center justify-center">
+                  {/* Dashed orbit ring */}
+                  <motion.div className="absolute inset-0 rounded-full"
+                    style={{ border: "3px dashed rgba(6,182,212,0.3)" }}
+                    animate={breathing ? { rotate: 360 } : {}}
+                    transition={{ duration: 19, repeat: Infinity, ease: "linear" }}
+                  />
+                  {/* Main circle */}
+                  <motion.div
+                    className="w-44 h-44 rounded-full flex items-center justify-center"
+                    style={{
+                      background: breathing ? "#22C55E" : "rgba(34,197,94,0.2)",
+                      border: "3px solid rgba(34,197,94,0.5)",
+                      boxShadow: breathing ? "0 0 40px rgba(34,197,94,0.4)" : "none",
+                    }}
+                    animate={breathing ? {
+                      scale: phase === 0 ? [1, 1.15] : phase === 1 ? 1.15 : [1.15, 1],
+                    } : { scale: 1 }}
+                    transition={{
+                      duration: BREATHE_PHASES[phase]?.seconds || 4,
+                      ease: "easeInOut",
+                    }}
+                  >
+                    <div className="text-center">
+                      {breathing ? (
+                        <>
+                          <p className="font-headline text-2xl font-black text-white uppercase">{BREATHE_PHASES[phase].label}</p>
+                          <p className="text-4xl font-black text-white mt-1">{countdown}</p>
+                        </>
+                      ) : (
+                        <p className="text-sm font-bold" style={{ color: "rgba(255,255,255,0.6)" }}>TAP START</p>
+                      )}
+                    </div>
+                  </motion.div>
+                </div>
+              </div>
+
+              {/* Controls */}
+              <motion.button onClick={toggleBreathing}
+                className="w-full py-3.5 rounded-xl text-sm font-black uppercase tracking-wider"
+                style={{
+                  background: breathing ? colors.surfaceContainerHigh : "#22C55E",
+                  color: breathing ? "#ffffff" : "#ffffff",
+                  border: breathing ? `1px solid ${colors.border}` : "none",
+                }}
+                whileTap={{ scale: 0.97 }}>
+                {breathing ? "STOP ENGINE" : "START 4-7-8 SYNC"}
+              </motion.button>
+
+              {cycles > 0 && (
+                <p className="text-xs text-center mt-3" style={{ color: colors.textMuted }}>
+                  {cycles} cycle{cycles > 1 ? "s" : ""} completed · +{cycles * 10} XP earned
+                </p>
+              )}
+
+              {/* How it works */}
+              <div className="mt-6 p-4 rounded-xl clay-card" style={{ background: colors.surfaceContainer }}>
+                <p className="text-[10px] font-black uppercase tracking-wider mb-2" style={{ color: "#06B6D4" }}>How it works</p>
+                <div className="flex gap-3">
+                  {BREATHE_PHASES.map((p, i) => (
+                    <div key={i} className="flex-1 text-center p-2 rounded-lg" style={{ background: colors.surfaceContainerLow }}>
+                      <p className="font-headline text-lg font-black" style={{ color: "#22C55E" }}>{p.seconds}s</p>
+                      <p className="text-[10px] font-bold uppercase" style={{ color: colors.textFaint }}>{p.label}</p>
+                    </div>
+                  ))}
+                </div>
+              </div>
             </motion.div>
           )}
 
-          {activeTab === "history" && (
-            <motion.div
-              key="history"
-              initial={{ opacity: 0, x: -10 }} animate={{ opacity: 1, x: 0 }} exit={{ opacity: 0, x: 10 }}
-              transition={{ duration: 0.18 }}
-              className="space-y-4"
-            >
-              {moodChartData.length >= 2 ? (
-                <div className="bg-white/[0.04] border border-white/[0.07] rounded-2xl p-4">
-                  <div className="flex justify-between items-center mb-3">
-                    <p className="text-white/60 text-xs font-medium">Last {moodChartData.length} check-ins</p>
-                    <div className="flex gap-3 text-[10px] text-white/30">
-                      <span className="flex items-center gap-1">
-                        <span className="w-2 h-0.5 bg-[#FF9933] inline-block rounded" />Stress
-                      </span>
-                      <span className="flex items-center gap-1">
-                        <span className="w-2 h-0.5 bg-[#22C55E] inline-block rounded" />Sleep
-                      </span>
+          {tab === "STATS" && (
+            <motion.div key="stats" initial={{ opacity: 0, x: -20 }} animate={{ opacity: 1, x: 0 }} exit={{ opacity: 0, x: 20 }}>
+              <div className="rounded-2xl p-6 clay-card" style={{ background: colors.surfaceContainer }}>
+                <h3 className="font-headline text-lg font-bold text-white mb-4">Wellness History</h3>
+                <div className="space-y-4">
+                  <div className="p-4 rounded-xl" style={{ background: colors.surfaceContainerLowest }}>
+                    <p className="text-[10px] font-black uppercase tracking-wider mb-1" style={{ color: "#22C55E" }}>Avg. Stress</p>
+                    <p className="font-headline text-2xl font-bold text-white">{mentalWellness.stressLevel || stress}/10</p>
+                    <div className="w-full h-1.5 rounded-full mt-2 overflow-hidden" style={{ background: "rgba(34,197,94,0.15)" }}>
+                      <motion.div className="h-full rounded-full" style={{ background: "#22C55E" }}
+                        initial={{ width: 0 }} animate={{ width: `${((mentalWellness.stressLevel || stress) / 10) * 100}%` }} />
                     </div>
                   </div>
-                  <ResponsiveContainer width="100%" height={160}>
-                    <LineChart data={moodChartData}>
-                      <XAxis dataKey="date" tick={{ fill: "rgba(255,255,255,0.25)", fontSize: 10 }} axisLine={false} tickLine={false} />
-                      <Tooltip content={<MoodTooltip />} />
-                      <Line type="monotone" dataKey="stress" stroke="#FF9933" strokeWidth={2} dot={{ fill: "#FF9933", r: 3 }} activeDot={{ r: 5 }} />
-                      <Line type="monotone" dataKey="sleep"  stroke="#22C55E" strokeWidth={2} dot={{ fill: "#22C55E", r: 3 }} activeDot={{ r: 5 }} />
-                    </LineChart>
-                  </ResponsiveContainer>
-                </div>
-              ) : (
-                <div className="bg-white/[0.03] border border-white/[0.07] rounded-2xl p-8 text-center">
-                  <p className="text-4xl mb-3">📊</p>
-                  <p className="text-white/40 text-sm">Complete at least 2 mood check-ins to see your history chart.</p>
-                  <p className="text-white/20 text-xs mt-1">Come back daily for best insights</p>
-                </div>
-              )}
-
-              {mentalWellness.moodHistory.length > 0 && (
-                <div className="bg-white/[0.03] border border-white/[0.07] rounded-2xl overflow-hidden">
-                  <div className="px-4 py-3 border-b border-white/[0.06]">
-                    <p className="text-white/40 text-[10px] uppercase tracking-widest">Check-in Log</p>
+                  <div className="p-4 rounded-xl" style={{ background: colors.surfaceContainerLowest }}>
+                    <p className="text-[10px] font-black uppercase tracking-wider mb-1" style={{ color: "#06B6D4" }}>Avg. Sleep</p>
+                    <p className="font-headline text-2xl font-bold text-white">{mentalWellness.sleepQuality || sleep}/10</p>
+                    <div className="w-full h-1.5 rounded-full mt-2 overflow-hidden" style={{ background: "rgba(6,182,212,0.15)" }}>
+                      <motion.div className="h-full rounded-full" style={{ background: "#06B6D4" }}
+                        initial={{ width: 0 }} animate={{ width: `${((mentalWellness.sleepQuality || sleep) / 10) * 100}%` }} />
+                    </div>
                   </div>
-                  <div className="divide-y divide-white/[0.04]">
-                    {[...mentalWellness.moodHistory].reverse().slice(0, 10).map((entry, i) => (
-                      <div key={i} className="px-4 py-2.5 flex justify-between items-center">
-                        <span className="text-white/30 text-xs">
-                          {new Date(entry.date).toLocaleDateString("en-IN", { day: "2-digit", month: "short" })}
-                        </span>
-                        <div className="flex gap-4 text-xs">
-                          <span style={{ color: entry.stress <= 3 ? "#EF4444" : entry.stress >= 7 ? "#22C55E" : "#FF9933" }}>
-                            😰 {entry.stress}/10
-                          </span>
-                          <span style={{ color: entry.sleep >= 7 ? "#22C55E" : entry.sleep <= 4 ? "#EF4444" : "#FF9933" }}>
-                            🌙 {entry.sleep}/10
-                          </span>
-                        </div>
-                      </div>
-                    ))}
+                  <div className="p-4 rounded-xl" style={{ background: colors.surfaceContainerLowest }}>
+                    <p className="text-[10px] font-black uppercase tracking-wider mb-1" style={{ color: "#FF9933" }}>Breathing Cycles</p>
+                    <p className="font-headline text-2xl font-bold text-white">{cycles}</p>
                   </div>
                 </div>
-              )}
+              </div>
             </motion.div>
           )}
-
         </AnimatePresence>
-    </PageShell>
+      </div>
+    </div>
   );
 }

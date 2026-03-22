@@ -1,0 +1,260 @@
+<!DOCTYPE html>
+
+<html class="light" lang="en"><head>
+<meta charset="utf-8"/>
+<meta content="width=device-width, initial-scale=1.0" name="viewport"/>
+<title>VANGARD - Hill Climb RPG</title>
+<script src="https://cdn.tailwindcss.com?plugins=forms,container-queries"></script>
+<link href="https://fonts.googleapis.com/css2?family=Plus+Jakarta+Sans:wght@400;600;700;800&amp;family=Be+Vietnam+Pro:wght@300;400;500;700;900&amp;display=swap" rel="stylesheet"/>
+<link href="https://fonts.googleapis.com/css2?family=Material+Symbols+Outlined:wght,FILL@100..700,0..1&amp;display=swap" rel="stylesheet"/>
+<script id="tailwind-config">
+        tailwind.config = {
+            darkMode: "class",
+            theme: {
+                extend: {
+                    colors: {
+                        "primary": "#22C55E", // Hill Climb Green
+                        "secondary": "#0EA5E9", // Sky Blue
+                        "tertiary": "#78350F", // Earthy Brown
+                        "background": "#BAE6FD", // Light Sky Blue
+                        "surface": "#ffffff",
+                        "on-surface": "#1e293b",
+                        "on-primary": "#ffffff",
+                        "error": "#ef4444"
+                    },
+                    fontFamily: {
+                        "headline": ["Plus Jakarta Sans"],
+                        "body": ["Be Vietnam Pro"],
+                        "label": ["Be Vietnam Pro"]
+                    },
+                    borderRadius: { 
+                        "DEFAULT": "0.5rem", 
+                        "lg": "1rem", 
+                        "xl": "1.5rem", 
+                        "full": "9999px" 
+                    },
+                },
+            },
+        }
+    </script>
+<style>
+        @keyframes bounce-subtle {
+            0%, 100% { transform: translateY(0); }
+            50% { transform: translateY(-5px); }
+        }
+        .bouncy {
+            animation: bounce-subtle 2s ease-in-out infinite;
+        }
+        .hill-climb-border {
+            border: 4px solid #1e293b;
+            box-shadow: 4px 4px 0px #1e293b;
+        }
+        .pixel-shadow {
+            box-shadow: 6px 6px 0px rgba(0,0,0,0.15);
+        }
+        .grass-bg {
+            background-color: #22C55E;
+            background-image: linear-gradient(0deg, #16a34a 2px, transparent 2px);
+            background-size: 100% 4px;
+        }
+        .sky-gradient {
+            background: linear-gradient(to bottom, #0EA5E9, #BAE6FD);
+        }
+        .dirt-texture {
+            background-color: #78350F;
+            background-image: radial-gradient(#92400e 10%, transparent 10%);
+            background-size: 10px 10px;
+        }
+        .card-pixel {
+            image-rendering: pixelated;
+            border: 4px solid #1e293b;
+            transition: all 0.2s cubic-bezier(0.175, 0.885, 0.32, 1.275);
+        }
+        .card-pixel:hover {
+            transform: scale(1.02) translateY(-4px);
+            box-shadow: 8px 8px 0px #1e293b;
+        }
+        .hexagon {
+            clip-path: polygon(25% 0%, 75% 0%, 100% 50%, 75% 100%, 25% 100%, 0% 50%);
+            border: 3px solid #1e293b;
+        }
+    </style>
+</head>
+<body class="bg-background font-body text-on-surface sky-gradient min-h-screen">
+<!-- TopAppBar -->
+<header class="fixed top-0 w-full z-50 flex justify-between items-center px-6 py-4 bg-white/90 backdrop-blur-md border-b-4 border-tertiary">
+<div class="text-2xl font-black text-tertiary tracking-tight font-headline italic uppercase">VANGARD <span class="text-primary text-sm block -mt-2">RACING</span></div>
+<div class="flex items-center gap-6">
+<span class="font-headline text-sm font-extrabold bg-yellow-400 px-3 py-1 hill-climb-border">🪙 1,250 XP</span>
+<button class="material-symbols-outlined text-tertiary hover:bg-slate-100 transition-colors p-2 rounded-lg border-2 border-tertiary">settings</button>
+<div class="w-12 h-12 hill-climb-border overflow-hidden bg-white">
+<img alt="User profile avatar" class="w-full h-full object-cover" src="https://lh3.googleusercontent.com/aida-public/AB6AXuDV-geFg5VSgv93oB8J0U7rt_8x09XcRTom2ofGDgOvtWsg_4up-uJWPAW14jsW4svvDpMvN_tEam8djiQr-pohIK7tbdZh65E_x88DSdsURpQ3bFYHUHYqUFCaG47KrthG8QRMvLkorcIAbzy2DH3hX9MGgc_fCgg_xKcqZHFcvLFM_ykzZh8yNiMXtJ61g--4MTn-s0XbHrWG_qZDyP6Ls3F10NsJmRDI_UY3JAb7eAdQr868i7IvDirMy0kzK6IPf5LJHaU1vVQ"/>
+</div>
+</div>
+</header>
+<main class="pt-28 pb-32 px-6 max-w-7xl mx-auto grid grid-cols-1 md:grid-cols-12 gap-8">
+<!-- Left Column: Character Presentation -->
+<section class="md:col-span-5 flex flex-col gap-8">
+<div class="relative bg-white rounded-xl p-8 flex items-center justify-center min-h-[500px] hill-climb-border overflow-hidden bouncy">
+<!-- Background Hill Decor -->
+<div class="absolute bottom-0 left-0 w-full h-32 grass-bg border-t-4 border-tertiary"></div>
+<!-- Character Image -->
+<div class="relative z-10 w-full max-w-[300px]">
+<img alt="Dr. Raahat Mascot" class="w-full h-auto drop-shadow-[4px_4px_0px_rgba(0,0,0,0.5)]" src="https://lh3.googleusercontent.com/aida-public/AB6AXuA2RUFY4KrB6sXNU0viq4qgVyHF_u5-gTjHlmyj7lofcJYjK6GQ8GOrsLT7ZbZ5qs0Xw-ca3QSwW59R8e19cqiXITDIljSNWHOjUlKl9FgCLTEz5Ftjs3drIbsGiw1U-5uzL8dqGalYQI7_amoYoqNUyyMMacAS_e1KTJ1XjEgW56TqsuZTQHGU810sqzrapKwsGAN5zJKZ7VBZ-cM5aZD32my9EM-3CZ_gsvDQ1dDyLNNeKTNTlqHsyMfJ1piF3p4pAwTyDdgC3FE"/>
+<!-- Floating State Badge -->
+<div class="absolute -top-4 -right-4 bg-primary text-white px-4 py-2 hill-climb-border font-black text-xs flex items-center gap-2">
+<span class="material-symbols-outlined text-sm">sentiment_very_satisfied</span>
+                    MAX FUEL
+                </div>
+</div>
+</div>
+<!-- Health & Streak Stats -->
+<div class="grid grid-cols-2 gap-4">
+<div class="bg-white rounded-lg p-6 hill-climb-border">
+<div class="flex items-center justify-between mb-4">
+<span class="text-tertiary text-xs font-black uppercase tracking-widest">HP TANK</span>
+<span class="material-symbols-outlined text-error">favorite</span>
+</div>
+<div class="w-full h-6 bg-slate-200 border-2 border-tertiary overflow-hidden">
+<div class="h-full w-[85%] bg-error border-r-4 border-tertiary"></div>
+</div>
+<p class="mt-2 text-tertiary font-black text-sm uppercase">850/1000 HP</p>
+</div>
+<div class="bg-white rounded-lg p-6 hill-climb-border">
+<div class="flex items-center justify-between mb-4">
+<span class="text-tertiary text-xs font-black uppercase tracking-widest">DRIVE STREAK</span>
+<span class="material-symbols-outlined text-orange-500">speed</span>
+</div>
+<div class="flex items-baseline gap-2">
+<span class="text-4xl font-black font-headline text-tertiary">12</span>
+<span class="text-tertiary text-sm font-bold">DAYS</span>
+</div>
+</div>
+</div>
+</section>
+<!-- Right Column: Progression & Badges -->
+<section class="md:col-span-7 flex flex-col gap-8">
+<!-- Level Section -->
+<div class="bg-white rounded-xl p-8 hill-climb-border flex flex-col md:flex-row items-center gap-8">
+<div class="relative w-40 h-40 flex items-center justify-center dirt-texture hill-climb-border rotate-3">
+<div class="absolute flex flex-col items-center text-white">
+<span class="text-xs font-black opacity-80">LEVEL</span>
+<span class="text-5xl font-black font-headline drop-shadow-lg">24</span>
+</div>
+</div>
+<div class="flex-1 text-center md:text-left">
+<h2 class="text-3xl font-black font-headline text-tertiary mb-2 uppercase">Dr. Raahat AI</h2>
+<p class="text-primary font-black mb-6 uppercase tracking-tighter">Grand Wellness Strategist</p>
+<div class="flex flex-wrap justify-center md:justify-start gap-4">
+<div class="bg-yellow-400 hill-climb-border px-4 py-2 flex items-center gap-2">
+<span class="material-symbols-outlined text-tertiary text-sm">stars</span>
+<span class="text-sm font-black text-tertiary">1,250 / 2,000 XP</span>
+</div>
+<div class="bg-primary text-white hill-climb-border px-4 py-2 flex items-center gap-2">
+<span class="material-symbols-outlined text-sm">military_tech</span>
+<span class="text-sm font-black uppercase">Elite Tier</span>
+</div>
+</div>
+</div>
+</div>
+<!-- Badge Collection Grid -->
+<div class="bg-white rounded-xl p-8 hill-climb-border">
+<div class="flex items-center justify-between mb-8">
+<h3 class="font-headline text-xl font-black text-tertiary uppercase">Trophy Room</h3>
+<span class="text-xs font-black text-white px-3 py-1 bg-tertiary rounded-md">12 / 48 UNLOCKED</span>
+</div>
+<div class="grid grid-cols-3 sm:grid-cols-4 lg:grid-cols-5 gap-6">
+<!-- Earned Badges -->
+<div class="flex flex-col items-center gap-2 group cursor-pointer">
+<div class="w-16 h-16 bg-error hill-climb-border rotate-[-5deg] flex items-center justify-center transform group-hover:scale-110 group-hover:rotate-0 transition-all">
+<span class="material-symbols-outlined text-white text-3xl">fitness_center</span>
+</div>
+<span class="text-[10px] font-black text-center uppercase text-tertiary">Iron Warrior</span>
+</div>
+<div class="flex flex-col items-center gap-2 group cursor-pointer">
+<div class="w-16 h-16 bg-primary hill-climb-border rotate-[8deg] flex items-center justify-center transform group-hover:scale-110 group-hover:rotate-0 transition-all">
+<span class="material-symbols-outlined text-white text-3xl">directions_walk</span>
+</div>
+<span class="text-[10px] font-black text-center uppercase text-tertiary">First Step</span>
+</div>
+<div class="flex flex-col items-center gap-2 group cursor-pointer">
+<div class="w-16 h-16 bg-secondary hill-climb-border rotate-[-3deg] flex items-center justify-center transform group-hover:scale-110 group-hover:rotate-0 transition-all">
+<span class="material-symbols-outlined text-white text-3xl">self_improvement</span>
+</div>
+<span class="text-[10px] font-black text-center uppercase text-tertiary">Zen Master</span>
+</div>
+<div class="flex flex-col items-center gap-2 group cursor-pointer">
+<div class="w-16 h-16 bg-orange-500 hill-climb-border rotate-[12deg] flex items-center justify-center transform group-hover:scale-110 group-hover:rotate-0 transition-all">
+<span class="material-symbols-outlined text-white text-3xl">restaurant</span>
+</div>
+<span class="text-[10px] font-black text-center uppercase text-tertiary">Chef Grade</span>
+</div>
+<!-- Locked Badges -->
+<div class="flex flex-col items-center gap-2 opacity-40">
+<div class="w-16 h-16 bg-slate-300 hill-climb-border flex items-center justify-center">
+<span class="material-symbols-outlined text-slate-500 text-3xl">lock</span>
+</div>
+<span class="text-[10px] font-black text-center uppercase text-slate-500">Locked</span>
+</div>
+<div class="flex flex-col items-center gap-2 opacity-40">
+<div class="w-16 h-16 bg-slate-300 hill-climb-border flex items-center justify-center">
+<span class="material-symbols-outlined text-slate-500 text-3xl">lock</span>
+</div>
+<span class="text-[10px] font-black text-center uppercase text-slate-500">Locked</span>
+</div>
+<div class="flex flex-col items-center gap-2 opacity-40">
+<div class="w-16 h-16 bg-slate-300 hill-climb-border flex items-center justify-center">
+<span class="material-symbols-outlined text-slate-500 text-3xl">lock</span>
+</div>
+<span class="text-[10px] font-black text-center uppercase text-slate-500">Locked</span>
+</div>
+</div>
+</div>
+<!-- Recent Achievements -->
+<div class="flex flex-col gap-4">
+<h4 class="font-headline text-sm font-black uppercase tracking-widest text-tertiary">Recent Milestones</h4>
+<div class="bg-white hill-climb-border p-4 flex items-center gap-4 hover:translate-x-2 transition-transform">
+<div class="w-12 h-12 bg-primary flex items-center justify-center hill-climb-border">
+<span class="material-symbols-outlined text-white">check_circle</span>
+</div>
+<div>
+<p class="font-black text-sm uppercase text-tertiary">Daily Goal Met: 10k Steps</p>
+<p class="text-xs font-bold text-primary">2 hours ago • +50 XP</p>
+</div>
+</div>
+<div class="bg-white hill-climb-border p-4 flex items-center gap-4 hover:translate-x-2 transition-transform">
+<div class="w-12 h-12 bg-error flex items-center justify-center hill-climb-border">
+<span class="material-symbols-outlined text-white">emoji_events</span>
+</div>
+<div>
+<p class="font-black text-sm uppercase text-tertiary">New Trophy: Iron Warrior</p>
+<p class="text-xs font-bold text-error">Yesterday • +200 XP</p>
+</div>
+</div>
+</div>
+</section>
+</main>
+<!-- BottomNavBar -->
+<nav class="fixed bottom-0 left-0 w-full z-50 flex justify-around items-center px-4 pb-6 pt-2 bg-tertiary border-t-8 border-primary shadow-[0_-8px_0px_rgba(30,41,59,1)]">
+<div class="flex flex-col items-center justify-center text-white/60 p-3 hover:text-white transition-all active:scale-95 duration-200 cursor-pointer">
+<span class="material-symbols-outlined text-3xl">home</span>
+<span class="text-[10px] font-black uppercase tracking-widest mt-1">Garage</span>
+</div>
+<div class="flex flex-col items-center justify-center text-white/60 p-3 hover:text-white transition-all active:scale-95 duration-200 cursor-pointer">
+<span class="material-symbols-outlined text-3xl">leaderboard</span>
+<span class="text-[10px] font-black uppercase tracking-widest mt-1">Stats</span>
+</div>
+<div class="flex flex-col items-center justify-center text-white/60 p-3 hover:text-white transition-all active:scale-95 duration-200 cursor-pointer">
+<span class="material-symbols-outlined text-3xl">sports_motorsports</span>
+<span class="text-[10px] font-black uppercase tracking-widest mt-1">Race</span>
+</div>
+<div class="flex flex-col items-center justify-center text-white/60 p-3 hover:text-white transition-all active:scale-95 duration-200 cursor-pointer">
+<span class="material-symbols-outlined text-3xl">shopping_cart</span>
+<span class="text-[10px] font-black uppercase tracking-widest mt-1">Shop</span>
+</div>
+<div class="flex flex-col items-center justify-center bg-primary text-white hill-climb-border -mt-8 p-4 transform scale-110 active:scale-90 duration-200 cursor-pointer">
+<span class="material-symbols-outlined text-3xl" style="font-variation-settings: 'FILL' 1;">person</span>
+<span class="text-[10px] font-black uppercase tracking-widest mt-1">Driver</span>
+</div>
+</nav>
+</body></html>

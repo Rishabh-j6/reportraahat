@@ -1,0 +1,293 @@
+<!DOCTYPE html>
+
+<html class="dark" lang="en"><head>
+<meta charset="utf-8"/>
+<meta content="width=device-width, initial-scale=1.0" name="viewport"/>
+<title>VANGARD - RPG Character Profile</title>
+<script src="https://cdn.tailwindcss.com?plugins=forms,container-queries"></script>
+<link href="https://fonts.googleapis.com/css2?family=Plus+Jakarta+Sans:wght@400;600;700;800&amp;family=Be+Vietnam+Pro:wght@300;400;500;700;900&amp;display=swap" rel="stylesheet"/>
+<link href="https://fonts.googleapis.com/css2?family=Material+Symbols+Outlined:wght,FILL@100..700,0..1&amp;display=swap" rel="stylesheet"/>
+<link href="https://fonts.googleapis.com/css2?family=Material+Symbols+Outlined:wght,FILL@100..700,0..1&amp;display=swap" rel="stylesheet"/>
+<script id="tailwind-config">
+        tailwind.config = {
+            darkMode: "class",
+            theme: {
+                extend: {
+                    colors: {
+                        "on-error-container": "#ffdad6",
+                        "secondary": "#c0c1ff",
+                        "secondary-fixed-dim": "#c0c1ff",
+                        "tertiary-fixed-dim": "#4ae176",
+                        "tertiary-fixed": "#6bff8f",
+                        "on-error": "#690005",
+                        "on-secondary-container": "#b0b2ff",
+                        "surface-container": "#1e1e2c",
+                        "surface-container-lowest": "#0d0d1a",
+                        "outline-variant": "#554336",
+                        "primary-fixed-dim": "#ffb77a",
+                        "secondary-fixed": "#e1e0ff",
+                        "on-tertiary-fixed-variant": "#005321",
+                        "surface-dim": "#12121f",
+                        "on-surface": "#e3e0f4",
+                        "error": "#ffb4ab",
+                        "surface-bright": "#383847",
+                        "on-tertiary": "#003915",
+                        "inverse-surface": "#e3e0f4",
+                        "on-surface-variant": "#dbc2b0",
+                        "on-secondary": "#1000a9",
+                        "secondary-container": "#3131c0",
+                        "on-tertiary-container": "#005020",
+                        "on-background": "#e3e0f4",
+                        "surface-container-low": "#1a1a28",
+                        "surface-container-highest": "#343342",
+                        "background": "#12121f",
+                        "surface": "#12121f",
+                        "on-tertiary-fixed": "#002109",
+                        "tertiary-container": "#2ccb63",
+                        "on-primary-fixed-variant": "#6d3a00",
+                        "inverse-primary": "#8f4e00",
+                        "error-container": "#93000a",
+                        "on-secondary-fixed": "#07006c",
+                        "primary-container": "#ff9933",
+                        "on-secondary-fixed-variant": "#2f2ebe",
+                        "on-primary-container": "#693800",
+                        "primary-fixed": "#ffdcc2",
+                        "on-primary-fixed": "#2e1500",
+                        "surface-variant": "#343342",
+                        "surface-tint": "#ffb77a",
+                        "outline": "#a38d7c",
+                        "surface-container-high": "#292937",
+                        "tertiary": "#52e87c",
+                        "inverse-on-surface": "#2f2f3d",
+                        "primary": "#ffc08d",
+                        "on-primary": "#4c2700"
+                    },
+                    fontFamily: {
+                        "headline": ["Plus Jakarta Sans"],
+                        "body": ["Be Vietnam Pro"],
+                        "label": ["Be Vietnam Pro"]
+                    },
+                    borderRadius: { "DEFAULT": "1rem", "lg": "2rem", "xl": "3rem", "full": "9999px" },
+                },
+            },
+        }
+    </script>
+<style>
+        .starfield {
+            background-image: radial-gradient(circle at 1px 1px, rgba(255, 255, 255, 0.05) 1px, transparent 0);
+            background-size: 40px 40px;
+        }
+        .clay-card {
+            box-shadow: inset 0 1px 1px rgba(255, 255, 255, 0.05);
+        }
+        .hexagon {
+            clip-path: polygon(25% 0%, 75% 0%, 100% 50%, 75% 100%, 25% 100%, 0% 50%);
+        }
+    </style>
+</head>
+<body class="bg-background font-body text-on-surface starfield min-h-screen">
+<!-- TopAppBar -->
+<header class="fixed top-0 w-full z-50 flex justify-between items-center px-6 py-4 bg-[#12121f]/70 backdrop-blur-xl shadow-[0_40px_60px_-15px_rgba(0,0,0,0.3)]">
+<div class="text-xl font-black text-[#ff9933] tracking-tighter font-headline">VANGARD</div>
+<div class="flex items-center gap-6">
+<span class="font-headline text-sm font-bold text-[#ffc08d]">⭐ 1,250 XP</span>
+<button class="material-symbols-outlined text-[#ff9933] hover:bg-[#1e1e2c] transition-colors p-2 rounded-full">hearing</button>
+<div class="w-10 h-10 rounded-full bg-surface-container-high border-2 border-primary-container overflow-hidden">
+<img alt="User profile avatar" class="w-full h-full object-cover" data-alt="Close up of a user profile avatar portrait" src="https://lh3.googleusercontent.com/aida-public/AB6AXuDV-geFg5VSgv93oB8J0U7rt_8x09XcRTom2ofGDgOvtWsg_4up-uJWPAW14jsW4svvDpMvN_tEam8djiQr-pohIK7tbdZh65E_x88DSdsURpQ3bFYHUHYqUFCaG47KrthG8QRMvLkorcIAbzy2DH3hX9MGgc_fCgg_xKcqZHFcvLFM_ykzZh8yNiMXtJ61g--4MTn-s0XbHrWG_qZDyP6Ls3F10NsJmRDI_UY3JAb7eAdQr868i7IvDirMy0kzK6IPf5LJHaU1vVQ"/>
+</div>
+</div>
+</header>
+<main class="pt-24 pb-32 px-6 max-w-7xl mx-auto grid grid-cols-1 md:grid-cols-12 gap-8">
+<!-- Left Column: Character Presentation -->
+<section class="md:col-span-5 flex flex-col gap-8">
+<div class="relative bg-surface-container-lowest rounded-xl p-8 flex items-center justify-center min-h-[500px] clay-card overflow-hidden group">
+<!-- Background Glow -->
+<div class="absolute inset-0 bg-gradient-to-t from-primary/10 to-transparent"></div>
+<!-- Mascot Image (Dr. Raahat) -->
+<div class="relative z-10 w-full max-w-[320px]">
+<img alt="Dr. Raahat Mascot" class="w-full h-auto drop-shadow-[0_20px_50px_rgba(255,153,51,0.3)]" data-alt="Stylized medical character with large expressive eyes wearing a white lab coat" src="https://lh3.googleusercontent.com/aida-public/AB6AXuA2RUFY4KrB6sXNU0viq4qgVyHF_u5-gTjHlmyj7lofcJYjK6GQ8GOrsLT7ZbZ5qs0Xw-ca3QSwW59R8e19cqiXITDIljSNWHOjUlKl9FgCLTEz5Ftjs3drIbsGiw1U-5uzL8dqGalYQI7_amoYoqNUyyMMacAS_e1KTJ1XjEgW56TqsuZTQHGU810sqzrapKwsGAN5zJKZ7VBZ-cM5aZD32my9EM-3CZ_gsvDQ1dDyLNNeKTNTlqHsyMfJ1piF3p4pAwTyDdgC3FE"/>
+<!-- Floating State Badge -->
+<div class="absolute -top-4 -right-4 bg-tertiary-container text-on-tertiary-container px-4 py-2 rounded-full font-bold text-xs flex items-center gap-2 shadow-lg">
+<span class="material-symbols-outlined text-sm">auto_awesome</span>
+                        HAPPY
+                    </div>
+</div>
+<!-- Grounding Shadow -->
+<div class="absolute bottom-12 w-48 h-6 bg-black/40 blur-xl rounded-full"></div>
+</div>
+<!-- Health & Streak Stats -->
+<div class="grid grid-cols-2 gap-4">
+<div class="bg-surface-container rounded-lg p-6 clay-card">
+<div class="flex items-center justify-between mb-4">
+<span class="text-on-surface-variant text-xs font-bold uppercase tracking-widest">Health Bar</span>
+<span class="material-symbols-outlined text-error">favorite</span>
+</div>
+<div class="w-full h-3 bg-surface-container-lowest rounded-full overflow-hidden">
+<div class="h-full w-[85%] bg-gradient-to-r from-error to-error-container"></div>
+</div>
+<p class="mt-2 text-on-surface font-bold text-sm">850/1000 HP</p>
+</div>
+<div class="bg-surface-container rounded-lg p-6 clay-card">
+<div class="flex items-center justify-between mb-4">
+<span class="text-on-surface-variant text-xs font-bold uppercase tracking-widest">Streak</span>
+<span class="material-symbols-outlined text-primary">local_fire_department</span>
+</div>
+<div class="flex items-baseline gap-2">
+<span class="text-4xl font-black font-headline text-primary">12</span>
+<span class="text-on-surface-variant text-sm font-bold">DAYS</span>
+</div>
+</div>
+</div>
+</section>
+<!-- Right Column: Progression & Badges -->
+<section class="md:col-span-7 flex flex-col gap-8">
+<!-- Level & XP Section -->
+<div class="bg-surface-container-high rounded-xl p-8 clay-card flex flex-col md:flex-row items-center gap-8">
+<div class="relative w-40 h-40 flex items-center justify-center">
+<!-- Concentric XP Ring -->
+<svg class="w-full h-full -rotate-90">
+<circle class="text-surface-container-lowest" cx="80" cy="80" fill="transparent" r="70" stroke="currentColor" stroke-width="12"></circle>
+<circle class="text-primary drop-shadow-[0_0_8px_rgba(255,153,51,0.5)]" cx="80" cy="80" fill="transparent" r="70" stroke="currentColor" stroke-dasharray="440" stroke-dashoffset="110" stroke-linecap="round" stroke-width="12"></circle>
+</svg>
+<div class="absolute flex flex-col items-center">
+<span class="text-xs text-on-surface-variant font-bold">LEVEL</span>
+<span class="text-4xl font-black font-headline text-on-surface">24</span>
+</div>
+</div>
+<div class="flex-1 text-center md:text-left">
+<h2 class="text-3xl font-black font-headline text-on-surface mb-2">Dr. Raahat AI</h2>
+<p class="text-on-surface-variant mb-6 font-medium">Grand Wellness Strategist</p>
+<div class="flex flex-wrap justify-center md:justify-start gap-4">
+<div class="bg-surface-container-lowest px-4 py-2 rounded-lg flex items-center gap-2">
+<span class="material-symbols-outlined text-primary text-sm">stars</span>
+<span class="text-sm font-bold">1,250 / 2,000 XP</span>
+</div>
+<div class="bg-surface-container-lowest px-4 py-2 rounded-lg flex items-center gap-2">
+<span class="material-symbols-outlined text-tertiary text-sm">workspace_premium</span>
+<span class="text-sm font-bold">Elite Tier</span>
+</div>
+</div>
+</div>
+</div>
+<!-- Badge Collection Grid -->
+<div class="bg-surface-container rounded-xl p-8 clay-card">
+<div class="flex items-center justify-between mb-8">
+<h3 class="font-headline text-xl font-bold">Badge Collection</h3>
+<span class="text-xs font-bold text-primary px-3 py-1 bg-primary/10 rounded-full">12 / 48 EARNED</span>
+</div>
+<div class="grid grid-cols-3 sm:grid-cols-4 lg:grid-cols-5 gap-6">
+<!-- Earned: Iron Warrior -->
+<div class="flex flex-col items-center gap-2 group">
+<div class="hexagon w-16 h-16 bg-error-container flex items-center justify-center shadow-lg transform group-hover:scale-110 transition-transform duration-300">
+<span class="material-symbols-outlined text-on-error-container" style="font-variation-settings: 'FILL' 1;">fitness_center</span>
+</div>
+<span class="text-[10px] font-bold text-center uppercase tracking-tighter text-on-surface">Iron Warrior</span>
+</div>
+<!-- Earned: First Step -->
+<div class="flex flex-col items-center gap-2 group">
+<div class="hexagon w-16 h-16 bg-tertiary-container flex items-center justify-center shadow-lg transform group-hover:scale-110 transition-transform duration-300">
+<span class="material-symbols-outlined text-on-tertiary-container" style="font-variation-settings: 'FILL' 1;">directions_walk</span>
+</div>
+<span class="text-[10px] font-bold text-center uppercase tracking-tighter text-on-surface">First Step</span>
+</div>
+<!-- Earned: Zen Master -->
+<div class="flex flex-col items-center gap-2 group">
+<div class="hexagon w-16 h-16 bg-secondary-container flex items-center justify-center shadow-lg transform group-hover:scale-110 transition-transform duration-300">
+<span class="material-symbols-outlined text-on-secondary-container" style="font-variation-settings: 'FILL' 1;">self_improvement</span>
+</div>
+<span class="text-[10px] font-bold text-center uppercase tracking-tighter text-on-surface">Zen Master</span>
+</div>
+<!-- Earned: Chef Grade -->
+<div class="flex flex-col items-center gap-2 group">
+<div class="hexagon w-16 h-16 bg-primary-container flex items-center justify-center shadow-lg transform group-hover:scale-110 transition-transform duration-300">
+<span class="material-symbols-outlined text-on-primary-container" style="font-variation-settings: 'FILL' 1;">restaurant</span>
+</div>
+<span class="text-[10px] font-bold text-center uppercase tracking-tighter text-on-surface">Chef Grade</span>
+</div>
+<!-- Locked Badges -->
+<div class="flex flex-col items-center gap-2 opacity-30 grayscale">
+<div class="hexagon w-16 h-16 bg-surface-container-highest flex items-center justify-center">
+<span class="material-symbols-outlined text-on-surface">lock</span>
+</div>
+<span class="text-[10px] font-bold text-center uppercase tracking-tighter">Locked</span>
+</div>
+<div class="flex flex-col items-center gap-2 opacity-30 grayscale">
+<div class="hexagon w-16 h-16 bg-surface-container-highest flex items-center justify-center">
+<span class="material-symbols-outlined text-on-surface">lock</span>
+</div>
+<span class="text-[10px] font-bold text-center uppercase tracking-tighter">Locked</span>
+</div>
+<div class="flex flex-col items-center gap-2 opacity-30 grayscale">
+<div class="hexagon w-16 h-16 bg-surface-container-highest flex items-center justify-center">
+<span class="material-symbols-outlined text-on-surface">lock</span>
+</div>
+<span class="text-[10px] font-bold text-center uppercase tracking-tighter">Locked</span>
+</div>
+<div class="flex flex-col items-center gap-2 opacity-30 grayscale">
+<div class="hexagon w-16 h-16 bg-surface-container-highest flex items-center justify-center">
+<span class="material-symbols-outlined text-on-surface">lock</span>
+</div>
+<span class="text-[10px] font-bold text-center uppercase tracking-tighter">Locked</span>
+</div>
+<div class="flex flex-col items-center gap-2 opacity-30 grayscale">
+<div class="hexagon w-16 h-16 bg-surface-container-highest flex items-center justify-center">
+<span class="material-symbols-outlined text-on-surface">lock</span>
+</div>
+<span class="text-[10px] font-bold text-center uppercase tracking-tighter">Locked</span>
+</div>
+<div class="flex flex-col items-center gap-2 opacity-30 grayscale">
+<div class="hexagon w-16 h-16 bg-surface-container-highest flex items-center justify-center">
+<span class="material-symbols-outlined text-on-surface">lock</span>
+</div>
+<span class="text-[10px] font-bold text-center uppercase tracking-tighter">Locked</span>
+</div>
+</div>
+</div>
+<!-- Recent Achievements / Timeline -->
+<div class="flex flex-col gap-4">
+<h4 class="font-headline text-sm font-bold uppercase tracking-widest text-on-surface-variant">Recent History</h4>
+<div class="bg-surface-container-low rounded-lg p-4 flex items-center gap-4">
+<div class="w-12 h-12 bg-tertiary/10 rounded-full flex items-center justify-center">
+<span class="material-symbols-outlined text-tertiary">check_circle</span>
+</div>
+<div>
+<p class="font-bold text-sm">Daily Goal Met: 10k Steps</p>
+<p class="text-xs text-on-surface-variant">2 hours ago • +50 XP</p>
+</div>
+</div>
+<div class="bg-surface-container-low rounded-lg p-4 flex items-center gap-4">
+<div class="w-12 h-12 bg-primary/10 rounded-full flex items-center justify-center">
+<span class="material-symbols-outlined text-primary">emoji_events</span>
+</div>
+<div>
+<p class="font-bold text-sm">New Badge Unlocked: Iron Warrior</p>
+<p class="text-xs text-on-surface-variant">Yesterday • +200 XP</p>
+</div>
+</div>
+</div>
+</section>
+</main>
+<!-- BottomNavBar -->
+<nav class="fixed bottom-0 left-0 w-full z-50 flex justify-around items-center px-4 pb-6 pt-2 bg-[#1e1e2c]/80 backdrop-blur-2xl rounded-t-[3rem] shadow-[0_-10px_40px_rgba(0,0,0,0.5)]">
+<div class="flex flex-col items-center justify-center text-[#e3e0f4]/40 p-3 hover:text-[#ffc08d] transition-all active:scale-90 duration-300">
+<span class="material-symbols-outlined">home</span>
+<span class="font-be-vietnam-pro text-[10px] uppercase tracking-widest mt-1">Home</span>
+</div>
+<div class="flex flex-col items-center justify-center text-[#e3e0f4]/40 p-3 hover:text-[#ffc08d] transition-all active:scale-90 duration-300">
+<span class="material-symbols-outlined">add_chart</span>
+<span class="font-be-vietnam-pro text-[10px] uppercase tracking-widest mt-1">Report</span>
+</div>
+<div class="flex flex-col items-center justify-center text-[#e3e0f4]/40 p-3 hover:text-[#ffc08d] transition-all active:scale-90 duration-300">
+<span class="material-symbols-outlined">fitness_center</span>
+<span class="font-be-vietnam-pro text-[10px] uppercase tracking-widest mt-1">Exercise</span>
+</div>
+<div class="flex flex-col items-center justify-center text-[#e3e0f4]/40 p-3 hover:text-[#ffc08d] transition-all active:scale-90 duration-300">
+<span class="material-symbols-outlined">restaurant</span>
+<span class="font-be-vietnam-pro text-[10px] uppercase tracking-widest mt-1">Nutrition</span>
+</div>
+<div class="flex flex-col items-center justify-center bg-[#ff9933]/20 text-[#ffc08d] rounded-full p-3 shadow-[inset_0_1px_1px_rgba(255,255,255,0.1)] active:scale-90 duration-300">
+<span class="material-symbols-outlined" style="font-variation-settings: 'FILL' 1;">person</span>
+<span class="font-be-vietnam-pro text-[10px] uppercase tracking-widest mt-1">Profile</span>
+</div>
+</nav>
+</body></html>

@@ -1,0 +1,224 @@
+<!DOCTYPE html>
+
+<html class="light" lang="en"><head>
+<meta charset="utf-8"/>
+<meta content="width=device-width, initial-scale=1.0" name="viewport"/>
+<script src="https://cdn.tailwindcss.com?plugins=forms,container-queries"></script>
+<link href="https://fonts.googleapis.com/css2?family=Plus+Jakarta+Sans:wght@400;500;600;700;800&amp;family=Be+Vietnam+Pro:wght@300;400;500;600;700&amp;family=Noto+Sans+Devanagari:wght@400;700&amp;family=Press+Start+2P&amp;display=swap" rel="stylesheet"/>
+<link href="https://fonts.googleapis.com/css2?family=Material+Symbols+Outlined:wght,FILL@100..700,0..1&amp;display=swap" rel="stylesheet"/>
+<script id="tailwind-config">
+        tailwind.config = {
+            darkMode: "class",
+            theme: {
+                extend: {
+                    colors: {
+                        "primary": "#ffc08d",
+                        "on-primary": "#4c2700",
+                        "primary-container": "#ff9933",
+                        "on-primary-container": "#693800",
+                        "surface-container": "#ffffff",
+                        "background": "#87CEEB",
+                    },
+                    fontFamily: {
+                        "headline": ["Plus Jakarta Sans"],
+                        "body": ["Be Vietnam Pro"],
+                        "pixel": ["'Press Start 2P'", "cursive"],
+                        "hindi": ["Noto Sans Devanagari"]
+                    },
+                    borderRadius: { "DEFAULT": "1rem", "lg": "2rem", "xl": "3rem", "full": "9999px" },
+                    animation: {
+                        'bounce-slow': 'bounce 2s infinite',
+                        'float': 'float 3s ease-in-out infinite',
+                        'pixel-jump': 'pixelJump 0.5s steps(2) infinite',
+                    },
+                    keyframes: {
+                        float: {
+                            '0%, 100%': { transform: 'translateY(0)' },
+                            '50%': { transform: 'translateY(-10px)' },
+                        },
+                        pixelJump: {
+                            '0%, 100%': { transform: 'translateY(0)' },
+                            '50%': { transform: 'translateY(-4px)' },
+                        }
+                    }
+                },
+            },
+        }
+    </script>
+<style>
+        .hill-climb-bg {
+            background-color: #87CEEB; /* Sky Blue */
+            background-image: 
+                radial-gradient(circle at 20% 20%, white 0%, transparent 15%),
+                radial-gradient(circle at 80% 15%, white 0%, transparent 10%);
+        }
+        .grass-floor {
+            background-color: #4CAF50;
+            background-image: repeating-linear-gradient(45deg, #45a049 25%, transparent 25%, transparent 50%, #45a049 50%, #45a049 75%, transparent 75%, transparent 100%);
+            background-size: 20px 20px;
+            height: 80px;
+            position: fixed;
+            bottom: 0;
+            left: 0;
+            right: 0;
+            z-index: 5;
+            border-top: 8px solid #3d8b40;
+        }
+        .dirt-floor {
+            background-color: #8B4513;
+            height: 40px;
+            position: fixed;
+            bottom: 0;
+            left: 0;
+            right: 0;
+            z-index: 4;
+        }
+        .game-card {
+            background: #f8f9fa;
+            border: 6px solid #333;
+            box-shadow: 8px 8px 0px rgba(0,0,0,0.2);
+            image-rendering: pixelated;
+        }
+        .game-button {
+            border: 4px solid #333;
+            box-shadow: 0px 6px 0px #c67626;
+            transition: all 0.1s;
+        }
+        .game-button:active {
+            transform: translateY(4px);
+            box-shadow: 0px 2px 0px #c67626;
+        }
+        .pixel-border {
+            border-style: solid;
+            border-width: 4px;
+            border-image-slice: 2;
+            border-image-width: 2;
+            border-image-outset: 0;
+            border-image-source: url("data:image/svg+xml,<svg xmlns='http://www.w3.org/2000/svg' width='6' height='6'><path d='M0 2h2v2H0zM2 0h2v2H2zM4 2h2v2H4zM2 4h2v2H2z' fill='%23333'/></svg>");
+        }
+        .cloud {
+            position: absolute;
+            background: white;
+            border-radius: 50px;
+            opacity: 0.8;
+            z-index: 1;
+        }
+    </style>
+</head>
+<body class="hill-climb-bg min-h-screen text-slate-900 font-body overflow-x-hidden selection:bg-primary/30">
+<!-- Decorative Clouds -->
+<div class="cloud w-32 h-12 top-20 left-[10%] animate-float"></div>
+<div class="cloud w-48 h-16 top-40 left-[70%] animate-float" style="animation-delay: 1s;"></div>
+<div class="cloud w-24 h-10 top-60 left-[40%] animate-float" style="animation-delay: 2s;"></div>
+<header class="fixed top-0 w-full z-50 flex justify-between items-center px-6 py-4 bg-white/30 backdrop-blur-md border-b-4 border-black/10">
+<div class="flex items-center gap-2">
+<span class="material-symbols-outlined text-primary-container text-3xl animate-pixel-jump" data-icon="shield" style="font-variation-settings: 'FILL' 1;">shield</span>
+<span class="font-pixel text-lg text-black tracking-tight">VANGARD</span>
+</div>
+<div class="flex items-center gap-4">
+<div class="bg-white/80 p-1 rounded-lg border-2 border-black flex gap-1">
+<button class="px-3 py-1 rounded text-[10px] font-pixel bg-primary-container text-white shadow-[0_2px_0_#c67626]">EN</button>
+<button class="px-3 py-1 rounded text-[10px] font-pixel text-slate-500 font-hindi">हिंदी</button>
+</div>
+<div class="flex items-center gap-2 bg-yellow-400 border-2 border-black rounded-lg px-3 py-1.5 shadow-[0_4px_0_#b38a00]">
+<span class="text-black font-pixel text-[10px]">⭐ 1,250 XP</span>
+</div>
+</div>
+</header>
+<main class="relative z-10 pt-32 pb-40 px-6 flex flex-col items-center justify-center min-h-screen">
+<div class="max-w-[440px] w-full game-card p-8 rounded-none flex flex-col items-center text-center space-y-8">
+<div class="space-y-4">
+<h1 class="font-hindi text-3xl font-bold text-slate-900 leading-tight">अपनी मेडिकल रिपोर्ट समझें</h1>
+<p class="font-pixel text-[10px] text-slate-600 leading-relaxed uppercase">Understand your report instantly</p>
+</div>
+<!-- Upload Zone -->
+<div class="w-full aspect-square max-h-[220px] bg-slate-200 border-4 border-dashed border-slate-400 rounded-none flex flex-col items-center justify-center cursor-pointer hover:bg-slate-300 transition-all group relative overflow-hidden">
+<div class="text-6xl mb-4 group-hover:scale-125 group-hover:-rotate-12 transition-transform duration-300 ease-out animate-bounce-slow">📋</div>
+<p class="font-pixel text-[10px] text-slate-500 uppercase">Drop Report Here</p>
+<div class="absolute inset-0 bg-primary/10 opacity-0 group-hover:opacity-100 transition-opacity"></div>
+</div>
+<!-- Action Button -->
+<button class="w-full h-[64px] game-button bg-[#ff9933] text-white font-pixel text-sm rounded-none flex items-center justify-center gap-3 animate-bounce hover:animate-none">
+<span class="material-symbols-outlined" data-icon="play_arrow" style="font-variation-settings: 'FILL' 1;">play_arrow</span>
+<span>SAMJHO! - समझो</span>
+</button>
+<div class="flex flex-wrap justify-center gap-3 pt-2">
+<div class="flex items-center gap-1.5 px-3 py-1.5 bg-slate-800 text-white rounded-none border-b-4 border-black">
+<span class="material-symbols-outlined text-[14px]" data-icon="lock">lock</span>
+<span class="font-pixel text-[8px] uppercase">Private</span>
+</div>
+<div class="flex items-center gap-1.5 px-3 py-1.5 bg-blue-600 text-white rounded-none border-b-4 border-black">
+<span class="material-symbols-outlined text-[14px]" data-icon="bolt">bolt</span>
+<span class="font-pixel text-[8px] uppercase">Fast</span>
+</div>
+<div class="flex items-center gap-1.5 px-3 py-1.5 bg-green-600 text-white rounded-none border-b-4 border-black">
+<span class="text-[12px]">🇮🇳</span>
+<span class="font-pixel text-[8px] uppercase">India</span>
+</div>
+</div>
+</div>
+</main>
+<!-- Floor Elements -->
+<div class="grass-floor"></div>
+<div class="dirt-floor"></div>
+<!-- Dr. Raahat Character -->
+<div class="fixed bottom-24 right-10 z-[60] animate-float">
+<button class="flex items-center gap-4 bg-white p-3 pr-6 border-4 border-black shadow-[8px_8px_0_rgba(0,0,0,0.1)] hover:translate-x-[-4px] hover:translate-y-[-4px] hover:shadow-[12px_12px_0_rgba(0,0,0,0.1)] transition-all group">
+<div class="w-14 h-14 bg-blue-100 border-2 border-black flex items-center justify-center overflow-hidden">
+<img alt="Dr. Raahat AI Mascot" class="w-full h-full object-cover" src="https://lh3.googleusercontent.com/aida-public/AB6AXuAsQ_zX8QtQgHCqON-ZKIZDqz_OO4seSbxItEFwp_OP6woDmYxgAoheVDt9ImdOkiTNgx44XC88irCcX_1PYSxRdsc7xuBBjo5jjDVMZn-bM_8Na9uE2NNRzyix2lczu-Eas9FGEg3VdngIod0mMWsyaCXG3vaiS9HdJk0wKCSUGdB2al1Gz-e1v353tkYLdOPT9gFneq65HnnucyOVVuUAAuOZq2J0NQf5-hJ7DiffjUM8GqPSZ5N3Wk28AP4_hPtKlREtHDT8dDk"/>
+</div>
+<div class="text-left">
+<div class="font-pixel text-[8px] text-green-600 mb-1 animate-pulse">● ONLINE</div>
+<div class="font-pixel text-[10px] text-black">DR. RAAHAT</div>
+</div>
+</button>
+</div>
+<!-- Side Navigation (Mobile Bottom / Desktop Side) -->
+<nav class="fixed bottom-0 left-0 w-full z-[70] flex justify-around items-center px-2 pb-2 pt-2 bg-slate-900 border-t-4 border-black md:hidden">
+<a class="flex flex-col items-center justify-center text-white/60 p-2 hover:text-primary transition-all" href="#">
+<span class="material-symbols-outlined">home</span>
+<span class="font-pixel text-[8px] mt-1">HUB</span>
+</a>
+<a class="flex flex-col items-center justify-center bg-primary-container text-white p-2 border-b-4 border-black" href="#">
+<span class="material-symbols-outlined" style="font-variation-settings: 'FILL' 1;">add_chart</span>
+<span class="font-pixel text-[8px] mt-1">PLAY</span>
+</a>
+<a class="flex flex-col items-center justify-center text-white/60 p-2" href="#">
+<span class="material-symbols-outlined">history</span>
+<span class="font-pixel text-[8px] mt-1">LOGS</span>
+</a>
+</nav>
+<div class="fixed left-0 top-0 h-full w-64 bg-slate-900 py-8 hidden md:flex flex-col border-r-8 border-black z-40">
+<div class="px-6 mb-12">
+<div class="flex items-center gap-3 mb-10">
+<span class="material-symbols-outlined text-primary-container animate-pixel-jump" data-icon="shield">shield</span>
+<span class="text-lg font-pixel text-white">VANGARD</span>
+</div>
+<div class="space-y-4">
+<p class="font-pixel text-[8px] text-slate-500 px-4">MAIN MENU</p>
+<a class="flex items-center gap-3 py-3 px-4 text-slate-400 hover:text-white transition-all group" href="#">
+<span class="material-symbols-outlined group-hover:animate-pixel-jump">home</span>
+<span class="font-pixel text-[10px]">DASHBOARD</span>
+</a>
+<a class="flex items-center gap-3 py-3 px-4 text-primary-container bg-slate-800 border-l-4 border-primary-container" href="#">
+<span class="material-symbols-outlined" style="font-variation-settings: 'FILL' 1;">add_chart</span>
+<span class="font-pixel text-[10px]">NEW UPLOAD</span>
+</a>
+<a class="flex items-center gap-3 py-3 px-4 text-slate-400 hover:text-white transition-all group" href="#">
+<span class="material-symbols-outlined">history</span>
+<span class="font-pixel text-[10px]">HISTORY</span>
+</a>
+</div>
+</div>
+<div class="mt-auto px-6 pb-24">
+<div class="bg-slate-800 p-4 border-4 border-black text-center">
+<div class="w-12 h-12 bg-blue-100 border-2 border-black mx-auto mb-3 flex items-center justify-center">
+<img alt="Dr. Raahat AI Mascot" class="w-full h-full object-cover" src="https://lh3.googleusercontent.com/aida-public/AB6AXuD-kQ4NmYrrVFY5oFsDvzojoQLWQSKDBlS42JSoeVR6QrnVLllz9Mrs--RYNOSEDTU1TklCbvaiR6xOooVzVQ-XXa_34GWduyVE3h4fKltb97eGyO0Xi2ZADkDJI32-sC7_tQARQ3Y8XmkAT1Rh9wT7BitsSG78FkoGKYjzBv8wM4A4jA5oQTPqxZZT_GFTXDLldmLTCVhJE8oxgsvos273-lOB2q5JzzVvGAgHvuviC0hZ5swSuv5dwldwLkgPobxNymu-7m24Qr0"/>
+</div>
+<h4 class="font-pixel text-[10px] text-white">DR. RAAHAT</h4>
+<p class="font-pixel text-[8px] text-slate-500 mb-4 mt-1">HEALTH BOT</p>
+<button class="w-full py-2 bg-green-500 text-white font-pixel text-[8px] border-b-4 border-green-700 hover:brightness-110 active:border-b-0 active:translate-y-[4px]">CONSULT</button>
+</div>
+</div>
+</div>
+</body></html>

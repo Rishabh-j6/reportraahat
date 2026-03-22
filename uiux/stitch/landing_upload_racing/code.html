@@ -1,0 +1,178 @@
+<!DOCTYPE html>
+
+<html class="dark" lang="hi"><head>
+<meta charset="utf-8"/>
+<meta content="width=device-width, initial-scale=1.0" name="viewport"/>
+<title>VANGARD - Understand Your Medical Report</title>
+<script src="https://cdn.tailwindcss.com?plugins=forms,container-queries"></script>
+<link href="https://fonts.googleapis.com/css2?family=Plus+Jakarta+Sans:ital,wght@0,400;0,700;0,800;1,800&amp;family=Be+Vietnam+Pro:wght@400;500;700;900&amp;family=Noto+Sans+Devanagari:wght@400;700;900&amp;family=Material+Symbols+Outlined:wght,FILL@100..700,0..1&amp;display=swap" rel="stylesheet"/>
+<link href="https://fonts.googleapis.com/css2?family=Material+Symbols+Outlined:wght,FILL@100..700,0..1&amp;display=swap" rel="stylesheet"/>
+<style>
+        .material-symbols-outlined {
+            font-variation-settings: 'FILL' 0, 'wght' 400, 'GRAD' 0, 'opsz' 48;
+        }
+        .pixel-border {
+            box-shadow: 
+                2px 0 0 0 #000, 
+                -2px 0 0 0 #000, 
+                0 2px 0 0 #000, 
+                0 -2px 0 0 #000;
+        }
+        .pixel-shadow-orange {
+            box-shadow: 4px 4px 0px 0px #6d3a00;
+        }
+        .clay-inset {
+            box-shadow: inset 2px 2px 8px rgba(0,0,0,0.05), inset -2px -2px 8px rgba(255,255,255,0.8);
+        }
+        .starfield-overlay {
+            background-image: radial-gradient(circle at 1px 1px, rgba(255,255,255,0.05) 1px, transparent 0);
+            background-size: 40px 40px;
+        }
+    </style>
+<script id="tailwind-config">
+        tailwind.config = {
+          darkMode: "class",
+          theme: {
+            extend: {
+              colors: {
+                "surface-container-high": "#292937",
+                "surface-bright": "#383847",
+                "on-error-container": "#ffdad6",
+                "surface-dim": "#12121f",
+                "surface": "#12121f",
+                "on-secondary-container": "#b0b2ff",
+                "surface-variant": "#343342",
+                "error": "#ffb4ab",
+                "surface-container": "#1e1e2c",
+                "secondary": "#c0c1ff",
+                "inverse-primary": "#8f4e00",
+                "error-container": "#93000a",
+                "surface-tint": "#ffb77a",
+                "surface-container-highest": "#343342",
+                "on-surface-variant": "#dbc2b0",
+                "on-secondary": "#1000a9",
+                "primary-fixed": "#ffdcc2",
+                "tertiary": "#52e87c",
+                "surface-container-lowest": "#0d0d1a",
+                "secondary-fixed-dim": "#c0c1ff",
+                "secondary-fixed": "#e1e0ff",
+                "tertiary-container": "#2ccb63",
+                "on-primary-fixed": "#2e1500",
+                "on-background": "#e3e0f4",
+                "primary-fixed-dim": "#ffb77a",
+                "tertiary-fixed": "#6bff8f",
+                "on-tertiary-fixed-variant": "#005321",
+                "on-tertiary-container": "#005020",
+                "on-tertiary-fixed": "#002109",
+                "tertiary-fixed-dim": "#4ae176",
+                "on-primary-container": "#693800",
+                "inverse-surface": "#e3e0f4",
+                "inverse-on-surface": "#2f2f3d",
+                "primary": "#ffc08d",
+                "outline": "#a38d7c",
+                "on-primary-fixed-variant": "#6d3a00",
+                "on-secondary-fixed-variant": "#2f2ebe",
+                "on-tertiary": "#003915",
+                "on-error": "#690005",
+                "surface-container-low": "#1a1a28",
+                "secondary-container": "#3131c0",
+                "on-secondary-fixed": "#07006c",
+                "on-primary": "#4c2700",
+                "background": "#12121f",
+                "primary-container": "#ff9933",
+                "on-surface": "#e3e0f4",
+                "outline-variant": "#554336"
+              },
+              fontFamily: {
+                "headline": ["Plus Jakarta Sans"],
+                "body": ["Be Vietnam Pro"],
+                "label": ["Be Vietnam Pro"],
+                "hindi": ["Noto Sans Devanagari"]
+              },
+              borderRadius: {"DEFAULT": "1rem", "lg": "2rem", "xl": "3rem", "full": "9999px"},
+            },
+          },
+        }
+    </script>
+</head>
+<body class="bg-[#87CEEB] font-body min-h-screen relative overflow-x-hidden">
+<!-- Hill Climb Background Elements -->
+<div class="fixed bottom-0 left-0 w-full h-48 bg-[#4CAF50] z-0" style="border-radius: 100% 100% 0 0 / 40% 40% 0 0; transform: scaleX(1.5);"></div>
+<div class="fixed bottom-0 left-[-10%] w-[120%] h-32 bg-[#388E3C] z-0" style="border-radius: 100% 100% 0 0 / 50% 50% 0 0;"></div>
+<!-- Top Navigation (From JSON) -->
+<header class="fixed top-0 w-full z-50 flex justify-between items-center px-6 py-4 bg-sky-400/70 dark:bg-slate-900/70 backdrop-blur-xl rounded-b-[3rem] shadow-[inset_0_1px_0_0_rgba(255,255,255,0.1)]">
+<div class="text-2xl font-black italic tracking-tighter text-orange-500 dark:text-orange-400">VANGARD</div>
+<div class="flex items-center gap-4">
+<button class="material-symbols-outlined text-slate-700 dark:text-slate-300 hover:scale-105 transition-transform active:scale-95" data-icon="military_tech">military_tech</button>
+<button class="material-symbols-outlined text-orange-600 dark:text-orange-300 hover:scale-105 transition-transform active:scale-95" data-icon="bolt">bolt</button>
+</div>
+</header>
+<main class="relative z-10 pt-32 pb-48 px-4 flex flex-col items-center justify-center min-h-screen">
+<!-- Dr. Raahat AI Mascot -->
+<div class="absolute top-24 right-4 md:right-24 w-32 h-32 md:w-48 md:h-48 z-20">
+<img alt="Dr. Raahat AI Mascot" class="w-full h-full drop-shadow-lg" data-alt="Friendly robot doctor mascot wearing a stethoscope" src="https://lh3.googleusercontent.com/aida-public/AB6AXuDiu4IT3qY5lyNhFC3sYDw-OVct6D62AZwkUx6o5GRo_X7bNny4thGqPzXqma_oxdy5Tbn_zHupakdd2ER6X59fMq0TR6zxtpSvYI9DCVTpN9TnhtdysChzDgY9Tk62YO9dw_xK0YMLkTYe6u01vZekJ6JNQynCIZlHjUVNBMCeUsUacWf_t3xWWc1AUmxkMWALWploz6uTaq-JhXeSJx_ztHPOvHrvh3de34j0uUIOlE3tynZfd1ZT5WsMAz7DMsoYhdd5inFBtys"/>
+<div class="absolute -bottom-2 -left-4 bg-white px-4 py-2 rounded-xl pixel-border font-bold text-xs">Dr. Raahat AI</div>
+</div>
+<!-- Central Upload Card (Soft Clay Style) -->
+<section class="max-w-xl w-full bg-white/95 rounded-[32px] pixel-border p-8 md:p-12 text-center clay-inset relative">
+<h1 class="font-hindi text-3xl md:text-4xl font-black text-slate-900 mb-2">अपनी मेडिकल रिपोर्ट समझें</h1>
+<p class="text-xl md:text-2xl font-headline font-bold text-slate-600 mb-8">Understand your report</p>
+<!-- Drop Zone -->
+<div class="group relative bg-slate-50 border-4 border-dashed border-slate-200 rounded-3xl p-10 mb-8 flex flex-col items-center justify-center hover:bg-orange-50 hover:border-orange-200 transition-colors cursor-pointer">
+<div class="text-6xl mb-4 animate-bounce">📋</div>
+<p class="text-slate-500 font-medium">Tap to upload or drag &amp; drop</p>
+<p class="text-slate-400 text-sm mt-1">PDF, JPG, or PNG (Max 10MB)</p>
+</div>
+<!-- CTA Button -->
+<button class="w-full bg-[#FF9800] text-white font-headline font-black text-xl py-5 rounded-2xl pixel-shadow-orange active:translate-y-1 active:shadow-none transition-all flex items-center justify-center gap-3">
+<span class="font-hindi">Samjho!</span>
+<span class="opacity-50 text-2xl">—</span>
+<span class="font-hindi">समझो</span>
+</button>
+<!-- Decorative Floating Elements -->
+<div class="absolute -top-6 -left-6 bg-tertiary-container text-white p-3 rounded-2xl pixel-border -rotate-12">
+<span class="material-symbols-outlined text-3xl" data-icon="verified_user">verified_user</span>
+</div>
+</section>
+<!-- Trust Chips (Pixel Style) -->
+<div class="mt-12 flex flex-wrap justify-center gap-4">
+<div class="bg-slate-900 text-white px-4 py-2 rounded-md pixel-border flex items-center gap-2 text-sm font-bold">
+<span class="material-symbols-outlined text-sm" data-icon="lock">lock</span>
+                100% PRIVATE
+            </div>
+<div class="bg-white text-slate-900 px-4 py-2 rounded-md pixel-border flex items-center gap-2 text-sm font-bold">
+<span class="material-symbols-outlined text-sm" data-icon="auto_awesome">auto_awesome</span>
+                AI POWERED
+            </div>
+<div class="bg-orange-500 text-white px-4 py-2 rounded-md pixel-border flex items-center gap-2 text-sm font-bold">
+<span class="material-symbols-outlined text-sm" data-icon="favorite">favorite</span>
+                DOCTOR VERIFIED
+            </div>
+</div>
+</main>
+<!-- Bottom Navigation Shell (From JSON) -->
+<nav class="fixed bottom-0 left-0 w-full z-50 flex justify-around items-center px-4 pb-6 pt-2 bg-slate-900/80 dark:bg-black/80 backdrop-blur-2xl rounded-t-[3rem] shadow-[0_-10px_40px_rgba(0,0,0,0.4)]">
+<a class="flex flex-col items-center justify-center text-slate-400 p-2 hover:text-orange-300 transition-colors" href="#">
+<span class="material-symbols-outlined" data-icon="settings_input_component">settings_input_component</span>
+<span class="font-plus-jakarta text-[10px] uppercase font-black tracking-widest mt-1">Garage</span>
+</a>
+<a class="flex flex-col items-center justify-center text-slate-400 p-2 hover:text-orange-300 transition-colors" href="#">
+<span class="material-symbols-outlined" data-icon="leaderboard">leaderboard</span>
+<span class="font-plus-jakarta text-[10px] uppercase font-black tracking-widest mt-1">Stats</span>
+</a>
+<a class="flex flex-col items-center justify-center bg-gradient-to-b from-orange-400 to-orange-600 text-white rounded-full p-3 shadow-[0_0_15px_rgba(255,152,0,0.5)] active:scale-90 duration-200" href="#">
+<span class="material-symbols-outlined" data-icon="sports_score">sports_score</span>
+<span class="font-plus-jakarta text-[10px] uppercase font-black tracking-widest mt-1">Race</span>
+</a>
+<a class="flex flex-col items-center justify-center text-slate-400 p-2 hover:text-orange-300 transition-colors" href="#">
+<span class="material-symbols-outlined" data-icon="local_gas_station">local_gas_station</span>
+<span class="font-plus-jakarta text-[10px] uppercase font-black tracking-widest mt-1">Fuel</span>
+</a>
+<a class="flex flex-col items-center justify-center text-slate-400 p-2 hover:text-orange-300 transition-colors" href="#">
+<span class="material-symbols-outlined" data-icon="person">person</span>
+<span class="font-plus-jakarta text-[10px] uppercase font-black tracking-widest mt-1">Driver</span>
+</a>
+</nav>
+<!-- Starfield Texture Overlay -->
+<div class="fixed inset-0 pointer-events-none starfield-overlay opacity-20 z-[5]"></div>
+</body></html>
