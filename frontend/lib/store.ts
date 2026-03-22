@@ -22,32 +22,30 @@ export type AvatarState =
 export interface LabFinding {
   parameter: string;
   value: string;
+  unit: string;
   normal_range: string;
   status: FindingStatus;
   simple_name_hindi: string;
   simple_name_english: string;
   layman_explanation_hindi: string;
   layman_explanation_english: string;
+  indian_population_mean?: number | null;
+  indian_population_std?: number | null;
+  status_vs_india?: string;
 }
 
 export interface ParsedReport {
   is_readable: boolean;
   report_type: ReportType;
-  patient_summary: {
-    name: string;
-    age: number;
-    gender: "MALE" | "FEMALE" | "UNKNOWN";
-    report_date: string;
-  };
   findings: LabFinding[];
   affected_organs: OrganFlag[];
   overall_summary_hindi: string;
   overall_summary_english: string;
   severity_level: SeverityLevel;
-  next_steps: string[];
   dietary_flags: DietaryFlag[];
   exercise_flags: ExerciseFlag[];
   ai_confidence_score: number;
+  grounded_in?: string;
   disclaimer: string;
 }
 
@@ -176,9 +174,14 @@ function generateChecklist(report: ParsedReport): ChecklistItem[] {
     .forEach((f, i) => {
       items.push({ id: `finding-${i}`, label: `Follow up on ${f.simple_name_english} (${f.status.toLowerCase()})`, completed: false, xpReward: 10 });
     });
-  report.next_steps.slice(0, 3).forEach((step, i) => {
-    items.push({ id: `step-${i}`, label: step, completed: false, xpReward: 10 });
+  // Generate steps from dietary/exercise flags
+  report.dietary_flags.slice(0, 2).forEach((flag, i) => {
+    const label = flag.replace(/_/g, " ").toLowerCase().replace(/^\w/, c => c.toUpperCase());
+    items.push({ id: `diet-${i}`, label, completed: false, xpReward: 10 });
   });
+  if (report.exercise_flags.length > 0) {
+    items.push({ id: `exercise-0`, label: `Follow exercise plan: ${report.exercise_flags[0].replace(/_/g, " ").toLowerCase()}`, completed: false, xpReward: 10 });
+  }
   return items;
 }
 

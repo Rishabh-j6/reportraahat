@@ -109,7 +109,7 @@ export default function MoodCheckIn({ onComplete }: MoodCheckInProps) {
             }`}
             style={
               selectedMoodIndex === i
-                ? { ringColor: mood.color, boxShadow: `0 0 0 2px ${mood.color}` }
+                ? { boxShadow: `0 0 0 2px ${mood.color}` }
                 : {}
             }
           >

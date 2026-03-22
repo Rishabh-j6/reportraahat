@@ -1,191 +1,363 @@
 "use client";
 import { useState, useEffect } from "react";
 import { motion, AnimatePresence } from "framer-motion";
+import { useRouter } from "next/navigation";
 import BodyMap from "@/components/BodyMap";
 import LabValuesTable from "@/components/LabValuesTable";
 import ConfidenceGauge from "@/components/ConfidenceGauge";
 import HealthChecklist from "@/components/HealthChecklist";
 import ShareButton from "@/components/ShareButton";
+import DoctorChat from "@/components/DoctorChat";
+import { PageShell, SectionLabel, Banner } from "@/components/ui";
+import { colors } from "@/lib/tokens";
+import { useGUCStore } from "@/lib/store";
 
-const MOCK = {
-  patientName: "Ramesh Kumar",
-  confidenceScore: 96,
-  originalText: "Patient presents with hepatomegaly and hyperlipidemia. Hemoglobin levels indicate mild anemia. Recommend follow-up in 2 weeks.",
-  simplifiedText: "आपका लीवर थोड़ा बड़ा है और खून में चर्बी ज़्यादा है। खून की कमी भी है। 2 हफ्ते में डॉक्टर से मिलें।",
-  simplifiedTextEn: "Your liver is slightly enlarged and blood fat is high. You also have mild anemia. Please see a doctor in 2 weeks.",
-  organFlags: { liver: true, heart: false, kidney: false, lungs: false },
-  labValues: [
-    { name: "Hemoglobin", nameHi: "हीमोग्लोबिन", value: 9.2, unit: "g/dL", status: "LOW" as const },
-    { name: "Total Cholesterol", nameHi: "कोलेस्ट्रॉल", value: 240, unit: "mg/dL", status: "HIGH" as const },
-    { name: "Blood Glucose", nameHi: "ब्लड शुगर", value: 95, unit: "mg/dL", status: "NORMAL" as const },
-    { name: "ALT (Liver)", nameHi: "लीवर एंज़ाइम", value: 78, unit: "U/L", status: "HIGH" as const },
-    { name: "Vitamin D", nameHi: "विटामिन डी", value: 18, unit: "ng/mL", status: "LOW" as const },
-  ],
-  checklist: [
-    "रोज़ 3 लीटर पानी पिएं (Drink 3L water daily)",
-    "तला हुआ खाना कम करें (Reduce fried food)",
-    "2 हफ्ते में डॉक्टर से मिलें (See doctor in 2 weeks)",
-    "हल्की वॉक करें रोज़ (Take a light walk daily)",
-    "विटामिन डी की धूप लें (Get morning sunlight)",
-  ],
-  jargonMap: { hepatomegaly: "लीवर का बड़ा होना", hyperlipidemia: "खून में चर्बी", anemia: "खून की कमी" },
+// Shared card style — matches the dark theme
+const CARD_STYLE: React.CSSProperties = {
+  background: colors.bgCard,
+  border: `1px solid ${colors.border}`,
+  borderRadius: 16,
+  padding: 20,
 };
 
 const cardVariants = {
-  hidden: { opacity: 0, y: 24 },
+  hidden: { opacity: 0, y: 20 },
   visible: (i: number) => ({
     opacity: 1, y: 0,
-    transition: { delay: i * 0.1, duration: 0.5, type: "spring", stiffness: 70 },
+    transition: { delay: i * 0.08, duration: 0.35, ease: "easeOut" },
   }),
 };
 
-const CARD: React.CSSProperties = {
-  background: "#131f30",
-  border: "1px solid #1e2d45",
-  borderRadius: 16,
-  padding: 24,
-};
+// Hover card wrapper
+const HoverCard = ({ children, custom, style }: { children: React.ReactNode; custom: number; style?: React.CSSProperties }) => (
+  <motion.div
+    custom={custom} variants={cardVariants} initial="hidden" animate="visible"
+    whileHover={{ y: -3, boxShadow: "0 8px 32px rgba(0,0,0,0.35)" }}
+    transition={{ type: "spring", stiffness: 300, damping: 25 }}
+    style={{ ...CARD_STYLE, ...style }}
+  >
+    {children}
+  </motion.div>
+);
 
 export default function Dashboard() {
+  const router = useRouter();
+  const latestReport = useGUCStore((s) => s.latestReport);
+  const profile = useGUCStore((s) => s.profile);
+  const checklistProgress = useGUCStore((s) => s.checklistProgress);
+  const addXP = useGUCStore((s) => s.addXP);
+  const appendChatMessage = useGUCStore((s) => s.appendChatMessage);
+  const chatHistory = useGUCStore((s) => s.chatHistory);
+
   const [speaking, setSpeaking] = useState(false);
   const [xp, setXp] = useState(0);
   const [showXPBurst, setShowXPBurst] = useState(false);
   const [showConfetti, setShowConfetti] = useState(false);
+
+  const language = profile.language === "HI" ? "hindi" : "english";
 
   useEffect(() => {
     setTimeout(() => setShowConfetti(true), 300);
     setTimeout(() => setShowConfetti(false), 2500);
   }, []);
 
+  // Redirect to home if no report
+  if (!latestReport) {
+    return (
+      <PageShell>
+        <div className="flex flex-col items-center justify-center min-h-[60vh] gap-4">
+          <span className="text-6xl">📋</span>
+          <h2 className="text-xl font-bold text-white">No Report Uploaded</h2>
+          <p className="text-sm text-center" style={{ color: colors.textMuted }}>
+            Upload a medical report first to see your analysis dashboard.
+          </p>
+          <motion.button
+            onClick={() => router.push("/")}
+            className="mt-2 px-6 py-3 rounded-xl text-sm font-bold"
+            style={{
+              background: "linear-gradient(135deg, #FF9933 0%, #FFAA55 100%)",
+              color: "#0d0d1a",
+              boxShadow: "0 2px 12px rgba(255,153,51,0.3)",
+            }}
+            whileHover={{ scale: 1.02 }}
+            whileTap={{ scale: 0.97 }}
+          >
+            ← Upload Report
+          </motion.button>
+        </div>
+      </PageShell>
+    );
+  }
+
+  const report = latestReport;
+
+  // Derive data from report
+  const abnormalFindings = report.findings.filter(
+    (f) => f.status === "HIGH" || f.status === "LOW" || f.status === "CRITICAL"
+  );
+
+  const organFlags = {
+    liver: report.affected_organs.includes("LIVER"),
+    heart: report.affected_organs.includes("HEART"),
+    kidney: report.affected_organs.includes("KIDNEY"),
+    lungs: report.affected_organs.includes("LUNGS"),
+  };
+
+  const labValues = report.findings.map((f) => ({
+    name: f.simple_name_english || f.parameter,
+    nameHi: f.simple_name_hindi || f.parameter,
+    value: parseFloat(f.value) || 0,
+    unit: f.unit || "",
+    status: (f.status === "CRITICAL" ? "HIGH" : f.status) as "HIGH" | "LOW" | "NORMAL",
+  }));
+
+  const checklist = checklistProgress.length > 0
+    ? checklistProgress.map((c) => c.label)
+    : [
+      "Visit a doctor for proper diagnosis",
+      "Follow dietary recommendations",
+      "Take prescribed supplements",
+      "Light daily exercise",
+      "Re-test in 4-6 weeks",
+    ];
+
+  const summaryText = language === "hindi"
+    ? report.overall_summary_hindi
+    : report.overall_summary_english;
+
   const handleListen = () => {
     if (!window.speechSynthesis) return;
     if (speaking) { window.speechSynthesis.cancel(); setSpeaking(false); return; }
-    const u = new SpeechSynthesisUtterance(MOCK.simplifiedText);
-    u.lang = "hi-IN"; u.rate = 0.85;
+    const u = new SpeechSynthesisUtterance(
+      language === "hindi" ? report.overall_summary_hindi : report.overall_summary_english
+    );
+    u.lang = language === "hindi" ? "hi-IN" : "en-IN";
+    u.rate = 0.85;
     u.onstart = () => setSpeaking(true);
     u.onend = () => setSpeaking(false);
     window.speechSynthesis.speak(u);
   };
 
-  const addXP = (amount: number) => {
+  const handleAddXP = (amount: number) => {
     setXp((p) => p + amount);
+    addXP(amount);
     setShowXPBurst(true);
     setTimeout(() => setShowXPBurst(false), 1000);
   };
 
-  return (
-    <main className="min-h-screen" style={{ background: "linear-gradient(135deg,#0d1b2e 0%,#0f172a 50%,#0d1b2e 100%)" }}>
+  const handleChatSend = async (message: string): Promise<string> => {
+    appendChatMessage("user", message);
 
+    try {
+      // Build GUC for the chat
+      const guc = {
+        name: profile.name,
+        age: profile.age,
+        gender: profile.gender,
+        language: profile.language,
+        latestReport: report,
+        mentalWellness: useGUCStore.getState().mentalWellness,
+      };
+
+      const res = await fetch("/api/chat", {
+        method: "POST",
+        headers: { "Content-Type": "application/json" },
+        body: JSON.stringify({
+          message,
+          history: chatHistory.slice(-20), // Last 20 messages for context
+          guc,
+        }),
+      });
+
+      const data = await res.json();
+      const reply = data.reply || "Sorry, I could not process your request.";
+      appendChatMessage("assistant", reply);
+      return reply;
+    } catch {
+      const fallback = "Sorry, I'm having trouble connecting. Please try again.";
+      appendChatMessage("assistant", fallback);
+      return fallback;
+    }
+  };
+
+  return (
+    <PageShell>
       {/* Confetti */}
       <AnimatePresence>
         {showConfetti && (
           <div className="fixed inset-0 pointer-events-none z-50 overflow-hidden">
             {[...Array(25)].map((_, i) => (
               <motion.div key={i} className="absolute w-2 h-2 rounded-sm"
-                style={{ left:`${Math.random()*100}%`, top:"-10px", background:["#FF9933","#22C55E","#3B82F6","#EC4899"][i%4] }}
-                animate={{ y:["0vh","110vh"], rotate:[0,720], opacity:[1,1,0] }}
-                transition={{ duration:1.5+Math.random(), delay:Math.random()*0.5 }} />
+                style={{
+                  left: `${Math.random() * 100}%`,
+                  top: "-10px",
+                  background: ["#FF9933", "#22C55E", "#3B82F6", "#EC4899"][i % 4],
+                }}
+                animate={{ y: ["0vh", "110vh"], rotate: [0, 720], opacity: [1, 1, 0] }}
+                transition={{ duration: 1.5 + Math.random(), delay: Math.random() * 0.5 }}
+              />
             ))}
           </div>
         )}
       </AnimatePresence>
 
-      {/* Header */}
-      <div className="sticky top-0 z-40 flex items-center justify-between px-5 py-3"
-        style={{ background:"rgba(13,27,46,0.92)", backdropFilter:"blur(12px)", borderBottom:"1px solid #1e2d45" }}>
+      {/* Sticky header */}
+      <div
+        className="sticky top-0 z-40 flex items-center justify-between px-5 py-3 mb-5 -mx-4 rounded-b-2xl"
+        style={{
+          background: "rgba(13,13,26,0.94)",
+          backdropFilter: "blur(20px)",
+          borderBottom: `1px solid rgba(255,153,51,0.08)`,
+          boxShadow: "0 1px 0 rgba(255,153,51,0.05), 0 4px 24px rgba(0,0,0,0.3)",
+        }}
+      >
+        <div className="absolute left-0 top-0 h-full w-16 pointer-events-none rounded-bl-2xl"
+          style={{ background: "radial-gradient(ellipse at 0% 50%, rgba(255,153,51,0.06) 0%, transparent 80%)" }} />
         <div>
-          <h1 className="text-xl font-black text-white">Report<span style={{color:"#FF9933"}}>Raahat</span></h1>
-          <p className="text-slate-400 text-xs">नमस्ते, {MOCK.patientName} 🙏</p>
+          <div className="flex items-center gap-2">
+            <span className="text-lg">🏥</span>
+            <h1 className="text-lg font-black">
+              <span style={{ color: "rgba(255,255,255,0.6)" }}>Report</span>
+              <span style={{ color: colors.accent }}>Raahat</span>
+            </h1>
+          </div>
+          <p className="text-xs font-devanagari" style={{ color: colors.textMuted }}>
+            नमस्ते, {profile.name} 🙏
+          </p>
         </div>
-        <div className="flex items-center gap-3">
-          <motion.div className="flex items-center gap-1.5 px-4 py-2 rounded-full font-bold text-sm"
-            style={{ background:"#1e2d45", border:"1px solid #2a3f5f", color:"#FF9933" }}
-            animate={showXPBurst ? {scale:[1,1.2,1]} : {}} transition={{duration:0.3}}>
+        <div className="flex items-center gap-2">
+          {/* XP pill */}
+          <motion.div
+            className="flex items-center gap-1.5 px-3 py-1.5 rounded-full text-sm font-bold"
+            style={{
+              background: "rgba(255,153,51,0.12)",
+              border: `1px solid rgba(255,153,51,0.25)`,
+              color: colors.accent,
+              boxShadow: showXPBurst ? "0 0 16px rgba(255,153,51,0.35)" : "none",
+            }}
+            animate={showXPBurst ? { scale: [1, 1.25, 1] } : {}}
+            transition={{ duration: 0.3 }}
+          >
             ⭐ {xp} XP
           </motion.div>
-          <button onClick={handleListen}
-            className="flex items-center gap-2 px-4 py-2 rounded-full text-sm font-semibold"
-            style={{ background:speaking?"#FF9933":"#1e2d45", color:speaking?"white":"#94a3b8", border:"1px solid #2a3f5f" }}>
-            🎧 Hindi में सुनें
-          </button>
-          <a href="/" className="text-slate-400 hover:text-white text-sm">← New Report</a>
+          {/* Listen button */}
+          <motion.button
+            onClick={handleListen}
+            className="flex items-center gap-1.5 px-3 py-1.5 rounded-full text-xs font-semibold transition-all"
+            style={{
+              background: speaking ? colors.accent : colors.bgSubtle,
+              color: speaking ? "#0d0d1a" : colors.textMuted,
+              border: `1px solid ${speaking ? colors.accent : colors.border}`,
+              boxShadow: speaking ? "0 0 12px rgba(255,153,51,0.3)" : "none",
+            }}
+            whileTap={{ scale: 0.95 }}
+          >
+            🎧 {speaking ? "रोकें" : "सुनें"}
+          </motion.button>
+          <a href="/" className="text-xs transition-colors"
+            style={{ color: colors.textMuted }}>
+            ← New
+          </a>
         </div>
       </div>
 
-      {/* 2-col grid */}
-      <div className="max-w-6xl mx-auto p-5 grid grid-cols-1 md:grid-cols-2 gap-4">
+      {/* Deficiency banner */}
+      {abnormalFindings.length > 0 && (
+        <Banner delay={0.05}>
+          रिपोर्ट में {abnormalFindings.length} असामान्य मान मिले — {report.affected_organs.join(", ")} पर ध्यान दें।
+        </Banner>
+      )}
 
-        {/* Card 1 — Original */}
-        <motion.div custom={0} variants={cardVariants} initial="hidden" animate="visible" style={CARD}>
-          <p className="text-xs font-bold uppercase tracking-widest mb-4" style={{color:"#FF9933"}}>📄 Original Report</p>
-          <p className="text-slate-300 text-sm leading-relaxed">
-            {MOCK.originalText.split(" ").map((word, i) => {
-              const lower = word.toLowerCase().replace(/[^a-z]/g,"");
-              const meaning = (MOCK.jargonMap as any)[lower];
-              return meaning ? (
-                <span key={i} className="relative group cursor-help inline-block mx-0.5">
-                  <span className="px-2 py-0.5 rounded-md text-sm font-semibold"
-                    style={{background:"rgba(255,153,51,0.2)",color:"#FF9933",border:"1px solid rgba(255,153,51,0.4)"}}>
-                    {word}
-                  </span>
-                  <span className="absolute bottom-full left-1/2 -translate-x-1/2 mb-2 px-2 py-1 rounded text-xs whitespace-nowrap opacity-0 group-hover:opacity-100 transition-opacity z-10 pointer-events-none"
-                    style={{background:"#0f172a",color:"#FF9933",border:"1px solid rgba(255,153,51,0.4)"}}>
-                    {meaning}
-                  </span>
-                </span>
-              ) : <span key={i}>{word} </span>;
-            })}
+      {/* 2-col card grid */}
+      <div className="grid grid-cols-1 md:grid-cols-2 gap-3">
+
+        {/* Card 1 — Report summary */}
+        <HoverCard custom={0}>
+          <SectionLabel>📄 Report Summary</SectionLabel>
+          <p className="text-sm leading-relaxed mb-2" style={{ color: colors.textSecondary }}>
+            {report.overall_summary_english}
           </p>
-          <p className="text-slate-600 text-xs mt-4">🟠 Highlighted words = medical jargon (hover for meaning)</p>
-        </motion.div>
+          {language === "hindi" && (
+            <p className="text-sm leading-relaxed font-devanagari" style={{ color: "rgba(255,255,255,0.7)" }}>
+              {report.overall_summary_hindi}
+            </p>
+          )}
+          <div className="flex items-center gap-2 mt-3">
+            <span className="text-[10px] px-2 py-1 rounded-full font-medium"
+              style={{
+                background: report.severity_level === "URGENT" ? "rgba(239,68,68,0.15)" :
+                  report.severity_level === "MODERATE_CONCERN" ? "rgba(245,158,11,0.15)" :
+                    "rgba(34,197,94,0.15)",
+                color: report.severity_level === "URGENT" ? "#EF4444" :
+                  report.severity_level === "MODERATE_CONCERN" ? "#F59E0B" :
+                    "#22C55E",
+              }}>
+              {report.severity_level.replace(/_/g, " ")}
+            </span>
+            <span className="text-[10px]" style={{ color: colors.textFaint }}>
+              {report.report_type.replace(/_/g, " ")}
+            </span>
+          </div>
+        </HoverCard>
 
-        {/* Card 2 — Explanation */}
-        <motion.div custom={1} variants={cardVariants} initial="hidden" animate="visible"
-          style={{...CARD, border:"1px solid rgba(255,153,51,0.3)"}}>
-          <p className="text-xs font-bold uppercase tracking-widest mb-4" style={{color:"#22C55E"}}>💬 आसान भाषा में (Simple Explanation)</p>
-          <p className="text-white text-lg leading-relaxed font-semibold mb-3">{MOCK.simplifiedText}</p>
-          <p className="text-slate-400 text-sm leading-relaxed mb-5">{MOCK.simplifiedTextEn}</p>
-          <motion.button onClick={handleListen}
-            className="flex items-center gap-2 px-5 py-2.5 rounded-xl text-sm font-bold text-white"
-            style={{background:"linear-gradient(135deg,#FF9933,#e67300)"}}
-            whileHover={{scale:1.03}} whileTap={{scale:0.97}}>
+        {/* Card 2 — Simple explanation */}
+        <HoverCard custom={1} style={{ borderColor: colors.accentBorder }}>
+          <SectionLabel>💬 आसान भाषा में</SectionLabel>
+          <p className="text-white text-base leading-relaxed font-semibold mb-2">
+            {report.overall_summary_hindi}
+          </p>
+          <p className="text-sm leading-relaxed mb-4" style={{ color: colors.textMuted }}>
+            {report.overall_summary_english}
+          </p>
+          <motion.button
+            onClick={handleListen}
+            className="flex items-center gap-2 px-4 py-2 rounded-xl text-sm font-bold transition-all"
+            style={{
+              background: "linear-gradient(135deg, #FF9933 0%, #FFAA55 100%)",
+              color: "#0d0d1a",
+              boxShadow: "0 2px 12px rgba(255,153,51,0.35)"
+            }}
+            whileHover={{ scale: 1.02, boxShadow: "0 4px 20px rgba(255,153,51,0.45)" }}
+            whileTap={{ scale: 0.97 }}
+          >
             🎧 सुनें (Listen)
           </motion.button>
-        </motion.div>
+        </HoverCard>
 
         {/* Card 3 — Body Map */}
-        <motion.div custom={2} variants={cardVariants} initial="hidden" animate="visible" style={CARD}>
-          <p className="text-xs font-bold uppercase tracking-widest mb-3" style={{color:"#FF9933"}}>🫀 Affected Body Part</p>
-          <BodyMap organFlags={MOCK.organFlags} />
-        </motion.div>
+        <HoverCard custom={2}>
+          <SectionLabel>🫀 Affected Body Part</SectionLabel>
+          <BodyMap organFlags={organFlags} />
+        </HoverCard>
 
         {/* Card 4 — Lab Values */}
-        <motion.div custom={3} variants={cardVariants} initial="hidden" animate="visible" style={CARD}>
-          <p className="text-xs font-bold uppercase tracking-widest mb-3" style={{color:"#22C55E"}}>🧪 Lab Values</p>
-          <LabValuesTable values={MOCK.labValues} />
-        </motion.div>
+        <HoverCard custom={3}>
+          <SectionLabel>🧪 Lab Values</SectionLabel>
+          <LabValuesTable values={labValues} />
+        </HoverCard>
 
-        {/* Card 5 — Confidence */}
-        <motion.div custom={4} variants={cardVariants} initial="hidden" animate="visible"
-          className="flex flex-col items-center justify-center" style={CARD}>
-          <p className="text-xs font-bold uppercase tracking-widest mb-6" style={{color:"#FF9933"}}>🎯 AI Confidence</p>
-          <ConfidenceGauge score={MOCK.confidenceScore} />
-        </motion.div>
+        {/* Card 5 — AI Confidence */}
+        <HoverCard custom={4} style={{ display: "flex", flexDirection: "column", alignItems: "center", justifyContent: "center" }}>
+          <SectionLabel>🎯 AI Confidence</SectionLabel>
+          <ConfidenceGauge score={report.ai_confidence_score} />
+        </HoverCard>
 
         {/* Card 6 — Checklist */}
-        <motion.div custom={5} variants={cardVariants} initial="hidden" animate="visible" style={CARD}>
-          <p className="text-xs font-bold uppercase tracking-widest mb-4" style={{color:"#22C55E"}}>✅ अगले कदम (Next Steps)</p>
-          <HealthChecklist items={MOCK.checklist} onXP={addXP} />
-        </motion.div>
+        <HoverCard custom={5}>
+          <SectionLabel>✅ अगले कदम (Next Steps)</SectionLabel>
+          <HealthChecklist items={checklist} onXP={handleAddXP} />
+        </HoverCard>
 
         {/* Card 7 — Share (full width) */}
-        <motion.div custom={6} variants={cardVariants} initial="hidden" animate="visible"
-          className="md:col-span-2 flex flex-col items-center gap-4" style={CARD}>
-          <p className="text-xs font-bold uppercase tracking-widest" style={{color:"#FF9933"}}>📱 Share with Family</p>
-          <ShareButton summary={MOCK.simplifiedText} onXP={addXP} />
-        </motion.div>
+        <HoverCard custom={6} style={{ gridColumn: "span 2", display: "flex", flexDirection: "column", alignItems: "center", gap: 12 }}>
+          <SectionLabel>📱 Share with Family</SectionLabel>
+          <ShareButton summary={summaryText} onXP={handleAddXP} />
+        </HoverCard>
 
       </div>
-    </main>
+
+      {/* Doctor Chat */}
+      <DoctorChat onSend={handleChatSend} />
+    </PageShell>
   );
 }

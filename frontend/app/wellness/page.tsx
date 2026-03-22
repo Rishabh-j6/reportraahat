@@ -6,6 +6,7 @@ import { LineChart, Line, XAxis, Tooltip, ResponsiveContainer } from "recharts";
 import { useGUCStore } from "@/lib/store";
 import MoodCheckIn from "@/components/MoodCheckIn";
 import BreathingWidget from "@/components/BreathingWidget";
+import { PageShell } from "@/components/ui";
 
 const AFFIRMATIONS = {
   high_stress: [
@@ -74,16 +75,7 @@ export default function WellnessPage() {
   ];
 
   return (
-    <div className="min-h-screen bg-[#0d0d1a] text-white">
-      <div
-        className="fixed inset-0 pointer-events-none opacity-[0.04]"
-        style={{
-          backgroundImage:
-            "radial-gradient(ellipse at 30% 40%, #6366F1 0%, transparent 55%), radial-gradient(ellipse at 80% 80%, #22C55E 0%, transparent 50%)",
-        }}
-      />
-
-      <div className="relative max-w-2xl mx-auto px-4 py-6 pb-24">
+    <PageShell>
 
         {/* Header */}
         <motion.div initial={{ opacity: 0, y: -12 }} animate={{ opacity: 1, y: 0 }} className="mb-5">
@@ -137,21 +129,27 @@ export default function WellnessPage() {
           </motion.div>
         )}
 
-        {/* Tabs */}
-        <div className="flex gap-1.5 mb-5 p-1 bg-white/[0.04] rounded-xl border border-white/[0.07]">
+        {/* Tabs — animated sliding indicator */}
+        <div className="flex gap-0 mb-5 p-1 bg-white/[0.04] rounded-xl border border-white/[0.07] relative">
           {TABS.map((tab) => (
             <button
               key={tab.key}
               onClick={() => setActiveTab(tab.key)}
-              className="flex-1 flex items-center justify-center gap-1.5 py-2 rounded-lg text-xs font-medium transition-all"
-              style={
-                activeTab === tab.key
-                  ? { background: "rgba(255,255,255,0.1)", color: "white" }
-                  : { color: "rgba(255,255,255,0.35)" }
-              }
+              className="flex-1 flex items-center justify-center gap-1.5 py-2 rounded-lg text-xs font-medium transition-colors relative z-10"
+              style={{
+                color: activeTab === tab.key ? "white" : "rgba(255,255,255,0.35)",
+              }}
             >
-              <span>{tab.icon}</span>
-              {tab.label}
+              {activeTab === tab.key && (
+                <motion.div
+                  layoutId="wellness-tab-bg"
+                  className="absolute inset-0 rounded-lg"
+                  style={{ background: "rgba(255,255,255,0.1)" }}
+                  transition={{ type: "spring", stiffness: 400, damping: 35 }}
+                />
+              )}
+              <span className="relative z-10">{tab.icon}</span>
+              <span className="relative z-10">{tab.label}</span>
             </button>
           ))}
         </div>
@@ -281,7 +279,6 @@ export default function WellnessPage() {
           )}
 
         </AnimatePresence>
-      </div>
-    </div>
+    </PageShell>
   );
 }

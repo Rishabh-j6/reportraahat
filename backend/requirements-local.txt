@@ -1,0 +1,14 @@
+# Core backend — required to run locally
+fastapi>=0.115.0
+uvicorn[standard]>=0.30.6
+pydantic>=2.8.2
+python-dotenv>=1.0.1
+httpx>=0.27.2
+python-multipart>=0.0.9
+
+# Document processing
+pdfplumber>=0.11.4
+Pillow>=10.4.0
+
+# Numeric
+numpy>=1.26.4

@@ -78,10 +78,15 @@ const DoctorChat: React.FC<DoctorChatProps> = ({ onSend }) => {
     <>
       <button
         onClick={() => setOpen((o) => !o)}
-        className="fixed bottom-5 left-64 z-50 rounded-full px-5 py-3 font-bold text-sm shadow-lg transition-transform hover:scale-105 active:scale-95"
-        style={{ backgroundColor: "#FF9933", color: "#000" }}
+        className="fixed bottom-5 left-64 z-50 rounded-full px-5 py-2.5 font-bold text-sm shadow-lg transition-all hover:scale-105 active:scale-95 flex items-center gap-2"
+        style={{
+          backgroundColor: open ? "rgba(255,153,51,0.9)" : "#FF9933",
+          color: "#0d0d1a",
+          boxShadow: "0 4px 20px rgba(255,153,51,0.35)",
+          backdropFilter: "blur(8px)",
+        }}
       >
-        {open ? "✕" : "💬 Dr. Raahat"}
+        {open ? "✕ Close" : "💬 Dr. Raahat"}
       </button>
 
       <AnimatePresence>
@@ -100,27 +105,39 @@ const DoctorChat: React.FC<DoctorChatProps> = ({ onSend }) => {
               exit={{ x: "100%" }}
               transition={{ type: "spring", damping: 26, stiffness: 200 }}
               className="fixed top-0 right-0 z-50 h-full w-full sm:w-96 flex flex-col"
-              style={{ backgroundColor: "#0F172A", borderLeft: "1px solid #334155" }}
+              style={{
+                background: "rgba(10,10,20,0.96)",
+                borderLeft: "1px solid rgba(255,153,51,0.1)",
+                backdropFilter: "blur(24px)",
+                boxShadow: "-8px 0 40px rgba(0,0,0,0.6)",
+              }}
             >
               <div
-                className="flex items-center justify-between px-4 py-3 border-b"
-                style={{ borderColor: "#334155" }}
+                className="flex items-center justify-between px-4 py-4 border-b"
+                style={{ borderColor: "rgba(255,255,255,0.07)" }}
               >
                 <div>
-                  <div className="flex items-center gap-2">
-                    <span className="text-xl">🩺</span>
-                    <span className="font-bold text-lg" style={{ color: "#FF9933" }}>
-                      Dr. Raahat
-                    </span>
+                  <div className="flex items-center gap-2.5">
+                    <div
+                      className="w-8 h-8 rounded-xl flex items-center justify-center"
+                      style={{ background: "rgba(255,153,51,0.15)", border: "1px solid rgba(255,153,51,0.25)" }}
+                    >
+                      🩺
+                    </div>
+                    <div>
+                      <span className="font-bold text-base" style={{ color: "#FF9933" }}>
+                        Dr. Raahat
+                      </span>
+                      <p className="text-[10px]" style={{ color: "rgba(255,255,255,0.3)" }}>
+                        Aapka AI Doctor • Online
+                      </p>
+                    </div>
                   </div>
-                  <p className="text-xs mt-0.5" style={{ color: "#94a3b8" }}>
-                    Aapka AI Doctor
-                  </p>
                 </div>
                 <button
                   onClick={() => setOpen(false)}
-                  className="w-8 h-8 flex items-center justify-center rounded-full text-lg hover:opacity-80"
-                  style={{ color: "#94a3b8" }}
+                  className="w-8 h-8 flex items-center justify-center rounded-xl text-sm transition-all hover:bg-white/5"
+                  style={{ color: "rgba(255,255,255,0.4)" }}
                 >
                   ✕
                 </button>
@@ -130,8 +147,8 @@ const DoctorChat: React.FC<DoctorChatProps> = ({ onSend }) => {
                 {messages.length === 0 && !loading && (
                   <div className="flex flex-col gap-2 mt-8">
                     <p
-                      className="text-center text-sm mb-2"
-                      style={{ color: "#94a3b8" }}
+                      className="text-center text-xs mb-3 font-medium"
+                      style={{ color: "rgba(255,255,255,0.35)" }}
                     >
                       {language === "hindi" ? "कुछ पूछें:" : "Ask something:"}
                     </p>
@@ -139,11 +156,11 @@ const DoctorChat: React.FC<DoctorChatProps> = ({ onSend }) => {
                       <button
                         key={s}
                         onClick={() => send(s)}
-                        className="rounded-xl px-4 py-2.5 text-sm text-left transition-colors hover:opacity-90"
+                        className="rounded-xl px-4 py-3 text-sm text-left transition-all hover:opacity-80"
                         style={{
-                          backgroundColor: "#1e293b",
-                          color: "#e2e8f0",
-                          border: "1px solid #334155",
+                          background: "rgba(255,255,255,0.04)",
+                          color: "rgba(255,255,255,0.8)",
+                          border: "1px solid rgba(255,255,255,0.08)",
                         }}
                       >
                         {s}
@@ -162,11 +179,15 @@ const DoctorChat: React.FC<DoctorChatProps> = ({ onSend }) => {
                       style={
                         msg.sender === "user"
                           ? {
-                            backgroundColor: "#1e293b",
+                            background: "rgba(255,153,51,0.12)",
                             borderLeft: "3px solid #FF9933",
-                            color: "#e2e8f0",
+                            color: "rgba(255,255,255,0.9)",
                           }
-                          : { backgroundColor: "#1e293b", color: "#e2e8f0" }
+                          : {
+                            background: "rgba(255,255,255,0.05)",
+                            color: "rgba(255,255,255,0.85)",
+                            border: "1px solid rgba(255,255,255,0.07)",
+                          }
                       }
                     >
                       {msg.text}
@@ -180,11 +201,11 @@ const DoctorChat: React.FC<DoctorChatProps> = ({ onSend }) => {
 
               <div
                 className="px-3 py-3 flex items-center gap-2 border-t"
-                style={{ borderColor: "#334155" }}
+                style={{ borderColor: "rgba(255,255,255,0.07)" }}
               >
                 <button
-                  className="w-10 h-10 flex items-center justify-center rounded-full text-lg shrink-0 hover:opacity-80"
-                  style={{ backgroundColor: "#1e293b", color: "#94a3b8" }}
+                  className="w-10 h-10 flex items-center justify-center rounded-full text-lg shrink-0 hover:opacity-80 transition-opacity"
+                  style={{ background: "rgba(255,255,255,0.05)", color: "rgba(255,255,255,0.4)" }}
                 >
                   🎤
                 </button>
@@ -197,20 +218,24 @@ const DoctorChat: React.FC<DoctorChatProps> = ({ onSend }) => {
                       ? "अपना सवाल लिखें..."
                       : "Type your question..."
                   }
-                  className="flex-1 rounded-xl px-4 py-2.5 text-sm outline-none transition-colors"
+                  className="flex-1 rounded-xl px-4 py-2.5 text-sm outline-none transition-all"
                   style={{
-                    backgroundColor: "#1e293b",
-                    color: "#e2e8f0",
+                    background: "rgba(255,255,255,0.05)",
+                    color: "rgba(255,255,255,0.9)",
                     border: "2px solid transparent",
                   }}
-                  onFocus={(e) => (e.currentTarget.style.borderColor = "#FF9933")}
+                  onFocus={(e) => (e.currentTarget.style.borderColor = "rgba(255,153,51,0.5)")}
                   onBlur={(e) => (e.currentTarget.style.borderColor = "transparent")}
                 />
                 <button
                   onClick={() => send(input)}
                   disabled={loading || !input.trim()}
-                  className="w-10 h-10 flex items-center justify-center rounded-full text-lg shrink-0 font-bold disabled:opacity-50 hover:opacity-90 transition-opacity"
-                  style={{ backgroundColor: "#FF9933", color: "#000" }}
+                  className="w-10 h-10 flex items-center justify-center rounded-full text-lg shrink-0 font-bold disabled:opacity-40 hover:opacity-90 transition-opacity"
+                  style={{
+                    background: "linear-gradient(135deg, #FF9933 0%, #FFAA55 100%)",
+                    color: "#0d0d1a",
+                    boxShadow: "0 2px 12px rgba(255,153,51,0.3)",
+                  }}
                 >
                   →
                 </button>

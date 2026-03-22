@@ -1,173 +1,104 @@
-# ============================================================
-# schemas.py — ALL Pydantic models — shared contract
-# Member 1 owns this. Everyone else imports from here.
-# Frontend mirrors AnalyzeResponse as TypeScript type.
-# ============================================================
-
-from __future__ import annotations
-from typing import Optional
+from pydantic import BaseModel
+from typing import Literal, Optional
 from enum import Enum
-from pydantic import BaseModel, Field
 
 
-# ── Enums ─────────────────────────────────────────────────────
-
-class SeverityLevel(str, Enum):
-    NORMAL = "NORMAL"
-    MILD_CONCERN = "MILD_CONCERN"
-    MODERATE_CONCERN = "MODERATE_CONCERN"
-    URGENT = "URGENT"
+class AnalyzeRequest(BaseModel):
+    image_base64: str        # base64 encoded image or PDF
+    language: str = "EN"    # HI or EN
 
 
-class FindingStatus(str, Enum):
-    HIGH = "HIGH"
-    LOW = "LOW"
-    NORMAL = "NORMAL"
-    CRITICAL = "CRITICAL"
-
-
-class OrganFlag(str, Enum):
-    LIVER = "LIVER"
-    KIDNEY = "KIDNEY"
-    HEART = "HEART"
-    LUNGS = "LUNGS"
-    BLOOD = "BLOOD"
-    SPINE = "SPINE"
-    BRAIN = "BRAIN"
-    SYSTEMIC = "SYSTEMIC"
-
-
-class DietaryFlag(str, Enum):
-    AVOID_FATTY_FOODS = "AVOID_FATTY_FOODS"
-    INCREASE_IRON = "INCREASE_IRON"
-    INCREASE_VITAMIN_D = "INCREASE_VITAMIN_D"
-    INCREASE_CALCIUM = "INCREASE_CALCIUM"
-    INCREASE_PROTEIN = "INCREASE_PROTEIN"
-    DRINK_MORE_WATER = "DRINK_MORE_WATER"
-    REDUCE_SODIUM = "REDUCE_SODIUM"
-    REDUCE_SUGAR = "REDUCE_SUGAR"
-    LOW_POTASSIUM_DIET = "LOW_POTASSIUM_DIET"
-    DIABETIC_DIET = "DIABETIC_DIET"
-
-
-class ExerciseFlag(str, Enum):
-    LIGHT_WALKING_ONLY = "LIGHT_WALKING_ONLY"
-    CARDIO_RESTRICTED = "CARDIO_RESTRICTED"
-    NORMAL_ACTIVITY = "NORMAL_ACTIVITY"
-    ACTIVE_ENCOURAGED = "ACTIVE_ENCOURAGED"
-
-
-class ReportType(str, Enum):
-    LAB_REPORT = "LAB_REPORT"
-    DISCHARGE_SUMMARY = "DISCHARGE_SUMMARY"
-    PRESCRIPTION = "PRESCRIPTION"
-    SCAN_REPORT = "SCAN_REPORT"
-
-
-# ── Sub-models ────────────────────────────────────────────────
-
-class PatientSummary(BaseModel):
-    name: str = "Patient"
-    age: int = 0
-    gender: str = "UNKNOWN"           # "MALE" | "FEMALE" | "UNKNOWN"
-    report_date: str = "2025-01-01"   # ISO date string
-
-
-class LabFinding(BaseModel):
+class Finding(BaseModel):
     parameter: str
     value: str
-    normal_range: str
-    status: FindingStatus
+    unit: str
+    status: Literal["HIGH", "LOW", "NORMAL", "CRITICAL"]
     simple_name_hindi: str
     simple_name_english: str
     layman_explanation_hindi: str
     layman_explanation_english: str
-
-
-# ── /analyze ──────────────────────────────────────────────────
-
-class AnalyzeRequest(BaseModel):
-    image_base64: str = Field(..., description="Base64-encoded image or PDF. May include data URI prefix.")
-    language: str = Field("EN", description="EN | HI | RAJ")
+    indian_population_mean: Optional[float] = None
+    indian_population_std: Optional[float] = None
+    status_vs_india: str
+    normal_range: Optional[str] = None
 
 
 class AnalyzeResponse(BaseModel):
     is_readable: bool
-    report_type: str                        # ReportType enum value
-    patient_summary: PatientSummary
-    findings: list[LabFinding]
-    affected_organs: list[OrganFlag]
+    report_type: Literal[
+        "LAB_REPORT", "DISCHARGE_SUMMARY",
+        "PRESCRIPTION", "SCAN_REPORT", "UNKNOWN"
+    ]
+    findings: list[Finding]
+    affected_organs: list[str]
     overall_summary_hindi: str
     overall_summary_english: str
-    severity_level: SeverityLevel
-    next_steps: list[str]
-    dietary_flags: list[DietaryFlag]
-    exercise_flags: list[ExerciseFlag]
-    ai_confidence_score: float = Field(ge=0, le=100)
+    severity_level: Literal[
+        "NORMAL", "MILD_CONCERN",
+        "MODERATE_CONCERN", "URGENT"
+    ]
+    dietary_flags: list[str]
+    exercise_flags: list[str]
+    ai_confidence_score: float
+    grounded_in: str
     disclaimer: str
 
 
-# ── /chat ─────────────────────────────────────────────────────
-
 class ChatMessage(BaseModel):
-    role: str     # "user" | "assistant"
+    role: Literal["user", "assistant"]
     content: str
 
 
 class ChatRequest(BaseModel):
-    message: str = Field(..., description="User's current message")
-    guc_context: dict = Field(..., description="Full GUC object from Zustand store")
-    history: list[ChatMessage] = Field(
-        default_factory=list,
-        description="Last N messages for conversation context"
-    )
+    message: str
+    history: list[ChatMessage] = []
+    guc: dict = {}
+    document_base64: Optional[str] = None    # base64 image or PDF
+    document_type: Optional[str] = "image"   # "image" or "pdf"
 
 
 class ChatResponse(BaseModel):
     reply: str
-    avatar_state: str = "SPEAKING"     # AvatarState hint for Member 3
 
-
-# ── /nutrition ────────────────────────────────────────────────
 
 class NutritionRequest(BaseModel):
-    dietary_flags: list[DietaryFlag]
-    language: str = "EN"
+    dietary_flags: list[str] = []
+    allergy_flags: list[str] = []
+    vegetarian: bool = True
 
 
 class FoodItem(BaseModel):
-    name_english: str
-    name_hindi: str
-    nutrient_highlights: dict   # {"iron_mg": 3.5, "protein_g": 2.1, ...}
-    serving_suggestion: str
-    food_group: str
+    food_name: str
+    food_name_hindi: str = ""
+    food_group: str = ""
+    energy_kcal: Optional[float] = None
+    protein_g: Optional[float] = None
+    iron_mg: Optional[float] = None
+    calcium_mg: Optional[float] = None
+    vitamin_c_mg: Optional[float] = None
+    vitamin_d_mcg: Optional[float] = None
+    fibre_g: Optional[float] = None
+    why_recommended: str = ""
+    serving_suggestion: str = ""
 
 
 class NutritionResponse(BaseModel):
     recommended_foods: list[FoodItem]
-    daily_targets: dict
-    deficiency_summary: str
-
-
-# ── /exercise ─────────────────────────────────────────────────
-
-class ExerciseRequest(BaseModel):
-    exercise_flags: list[ExerciseFlag]
-    severity_level: SeverityLevel = SeverityLevel.MILD_CONCERN
-    language: str = "EN"
+    daily_targets: dict[str, float]
+    deficiencies: list[str]
 
 
 class ExerciseDay(BaseModel):
-    day: str                  # "Monday" ... "Sunday"
+    day: str
     activity: str
     duration_minutes: int
-    intensity: str            # "Very Low" | "Low" | "Moderate" | "High" | "Rest"
-    notes: str
+    intensity: str
+    notes: str = ""
 
 
 class ExerciseResponse(BaseModel):
     tier: str
-    tier_description: str
+    tier_reason: str
     weekly_plan: list[ExerciseDay]
-    general_advice: str
-    avoid: list[str]
+    restrictions: list[str]
+    encouragement: str

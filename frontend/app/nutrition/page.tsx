@@ -11,6 +11,7 @@ import {
   Tooltip,
 } from "recharts";
 import { useGUCStore } from "@/lib/store";
+import { PageShell } from "@/components/ui";
 
 interface FoodItem {
   name_english: string;
@@ -126,8 +127,8 @@ export default function NutritionPage() {
 
   if (loading) {
     return (
-      <div className="min-h-screen bg-[#0d0d1a] p-6">
-        <div className="max-w-2xl mx-auto space-y-4">
+      <PageShell>
+        <div className="space-y-4">
           <div className="h-8 w-48 bg-white/5 rounded-xl animate-pulse" />
           <div className="h-64 bg-white/5 rounded-2xl animate-pulse" />
           <div className="grid grid-cols-2 gap-3">
@@ -136,21 +137,12 @@ export default function NutritionPage() {
             ))}
           </div>
         </div>
-      </div>
+      </PageShell>
     );
   }
 
   return (
-    <div className="min-h-screen bg-[#0d0d1a] text-white">
-      <div
-        className="fixed inset-0 opacity-[0.03] pointer-events-none"
-        style={{
-          backgroundImage:
-            "radial-gradient(circle at 25% 25%, #FF9933 0%, transparent 50%), radial-gradient(circle at 75% 75%, #22C55E 0%, transparent 50%)",
-        }}
-      />
-
-      <div className="relative max-w-2xl mx-auto px-4 py-6 pb-24">
+    <PageShell>
 
         {/* Header */}
         <motion.div initial={{ opacity: 0, y: -12 }} animate={{ opacity: 1, y: 0 }} className="mb-6">
@@ -348,7 +340,6 @@ export default function NutritionPage() {
         <p className="text-white/15 text-[10px] text-center mt-6">
           Nutritional data: IFCT 2017 · National Institute of Nutrition, ICMR
         </p>
-      </div>
-    </div>
+    </PageShell>
   );
 }

@@ -1,0 +1,48 @@
+name: Deploy to Hugging Face Spaces
+
+on:
+  push:
+    branches: [main]
+  workflow_dispatch:
+
+jobs:
+  deploy:
+    runs-on: ubuntu-latest
+    steps:
+      - name: Checkout
+        uses: actions/checkout@v4
+
+      - name: Push to Hugging Face Spaces
+        env:
+          HF_TOKEN: ${{ secrets.HF_TOKEN }}
+        run: |
+          # Configure git
+          git config --global user.email "ci@reportraahat.app"
+          git config --global user.name "ReportRaahat CI"
+
+          # Clone the HF Space repo (or create if doesn't exist)
+          git clone https://huggingface.co/spaces/${{ vars.HF_SPACE_ID || 'CaffeinatedCoding/reportraahat' }} hf-space \
+            --depth 1 \
+            -c http.extraHeader="Authorization: Bearer $HF_TOKEN" \
+            || mkdir hf-space
+
+          # Sync files to the HF Space
+          rsync -av --delete \
+            --exclude '.git' \
+            --exclude 'node_modules' \
+            --exclude '__pycache__' \
+            --exclude '.next' \
+            --exclude '.env' \
+            --exclude 'venv' \
+            ./ hf-space/
+
+          # Use the HF Spaces README (with metadata)
+          cp HF_README.md hf-space/README.md
+
+          # Push to HF
+          cd hf-space
+          git add -A
+          git diff --cached --quiet && echo "No changes" && exit 0
+          git commit -m "Deploy from GitHub: ${{ github.sha }}"
+          git push https://huggingface.co/spaces/${{ vars.HF_SPACE_ID || 'CaffeinatedCoding/reportraahat' }} main \
+            -c http.extraHeader="Authorization: Bearer $HF_TOKEN"

@@ -3,6 +3,7 @@
 import { useEffect, useState } from "react";
 import { motion, AnimatePresence } from "framer-motion";
 import { useGUCStore } from "@/lib/store";
+import { PageShell } from "@/components/ui";
 
 interface ExerciseDay {
   day: string;
@@ -102,8 +103,8 @@ export default function ExercisePage() {
 
   if (loading) {
     return (
-      <div className="min-h-screen bg-[#0d0d1a] p-6">
-        <div className="max-w-2xl mx-auto space-y-4">
+      <PageShell>
+        <div className="space-y-4">
           <div className="h-8 w-56 bg-white/5 rounded-xl animate-pulse" />
           <div className="h-28 bg-white/5 rounded-2xl animate-pulse" />
           <div className="flex gap-2">
@@ -113,18 +114,12 @@ export default function ExercisePage() {
           </div>
           <div className="h-40 bg-white/5 rounded-2xl animate-pulse" />
         </div>
-      </div>
+      </PageShell>
     );
   }
 
   return (
-    <div className="min-h-screen bg-[#0d0d1a] text-white">
-      <div
-        className="fixed inset-0 opacity-[0.04] pointer-events-none"
-        style={{ backgroundImage: `radial-gradient(circle at 70% 20%, ${tierCfg.color} 0%, transparent 50%)` }}
-      />
-
-      <div className="relative max-w-2xl mx-auto px-4 py-6 pb-24">
+    <PageShell>
 
         {/* Header */}
         <motion.div initial={{ opacity: 0, y: -12 }} animate={{ opacity: 1, y: 0 }} className="mb-6">
@@ -183,7 +178,11 @@ export default function ExercisePage() {
                 onClick={() => setSelectedDay(day.day)}
                 className="flex-shrink-0 flex flex-col items-center gap-1 px-3 py-2.5 rounded-xl transition-all min-w-[52px]"
                 style={
-                  isSelected ? { background: tierCfg.bg, border: `1px solid ${tierCfg.color}50` }
+                  isSelected ? {
+                    background: tierCfg.bg,
+                    border: `1px solid ${tierCfg.color}60`,
+                    boxShadow: `0 0 16px ${tierCfg.color}30`,
+                  }
                   : isDone   ? { background: "rgba(34,197,94,0.08)", border: "1px solid rgba(34,197,94,0.2)" }
                   :            { background: "rgba(255,255,255,0.04)", border: "1px solid rgba(255,255,255,0.07)" }
                 }
@@ -285,7 +284,7 @@ export default function ExercisePage() {
           >
             <p className="text-red-400/80 text-[10px] uppercase tracking-widest mb-2">⚠️ Avoid</p>
             <ul className="space-y-1.5">
-              {data.avoid.map((item, i) => (
+              {(data?.avoid ?? []).map((item, i) => (
                 <li key={i} className="flex items-start gap-2 text-white/40 text-xs">
                   <span className="text-red-400/50 mt-0.5 flex-shrink-0">✕</span>
                   {item}
@@ -294,7 +293,6 @@ export default function ExercisePage() {
             </ul>
           </motion.div>
         )}
-      </div>
-    </div>
+    </PageShell>
   );
 }

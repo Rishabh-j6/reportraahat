@@ -1,4 +1,5 @@
 "use client"
+import { motion } from "framer-motion"
 import { useGUCStore } from "@/lib/store"
 
 export default function AvatarPanel() {
@@ -9,45 +10,90 @@ export default function AvatarPanel() {
   const levelTitles = ["", "Rogi", "Jagruk", "Swasth", "Yoddha", "Nirogh"]
   const color = levelColors[avatarLevel]
 
+  const stateLabel: Record<string, string> = {
+    THINKING:  "Soch raha hoon...",
+    ANALYZING: "Analyze ho raha hai...",
+    HAPPY:     "Shabash! 🎉",
+    LEVEL_UP:  "Level Up! ⚡",
+    SPEAKING:  "Sun lo...",
+    CONCERNED: "Dhyan do...",
+  }
+
   return (
-    <div className="fixed bottom-6 right-6 z-50 flex flex-col items-center gap-1">
+    <div className="fixed bottom-6 right-6 z-50 flex flex-col items-center gap-1.5">
 
       {/* State tooltip */}
       {avatarState !== "IDLE" && (
-        <div className="text-xs px-2 py-1 rounded-full bg-slate-800 border
-          border-slate-600 text-[#FF9933] whitespace-nowrap mb-1">
-          {avatarState === "THINKING" && "Soch raha hoon..."}
-          {avatarState === "ANALYZING" && "Analyze ho raha hai..."}
-          {avatarState === "HAPPY" && "Shabash! 🎉"}
-          {avatarState === "LEVEL_UP" && "Level Up! ⚡"}
-          {avatarState === "SPEAKING" && "Sun lo..."}
-          {avatarState === "CONCERNED" && "Dhyan do..."}
-        </div>
+        <motion.div
+          initial={{ opacity: 0, y: 6, scale: 0.9 }}
+          animate={{ opacity: 1, y: 0, scale: 1 }}
+          exit={{ opacity: 0, y: 6, scale: 0.9 }}
+          className="text-xs px-3 py-1.5 rounded-xl mb-1 text-center"
+          style={{
+            background: "rgba(13,13,26,0.9)",
+            border: "1px solid rgba(255,153,51,0.25)",
+            color: "#FF9933",
+            backdropFilter: "blur(8px)",
+            boxShadow: "0 4px 20px rgba(0,0,0,0.4)",
+            whiteSpace: "nowrap",
+          }}
+        >
+          {stateLabel[avatarState]}
+        </motion.div>
       )}
 
-      {/* Avatar circle */}
-      <div
-        className="w-16 h-16 rounded-full bg-slate-900 border-2
-          flex items-center justify-center text-2xl"
-        style={{ borderColor: color }}
-      >
-        🤖
+      {/* Pulse ring (active when not IDLE) */}
+      <div className="relative">
+        {avatarState !== "IDLE" && (
+          <>
+            <span
+              className="absolute inset-0 rounded-full"
+              style={{
+                border: `2px solid ${color}`,
+                animation: "pulseRing 1.8s ease-out infinite",
+              }}
+            />
+            <span
+              className="absolute inset-0 rounded-full"
+              style={{
+                border: `2px solid ${color}`,
+                animation: "pulseRing 1.8s ease-out 0.6s infinite",
+              }}
+            />
+          </>
+        )}
+
+        {/* Avatar circle */}
+        <motion.div
+          className="w-14 h-14 rounded-full flex items-center justify-center text-2xl relative"
+          style={{
+            background: "rgba(13,13,26,0.95)",
+            border: `2px solid ${color}`,
+            boxShadow: `0 0 16px ${color}40`,
+          }}
+          whileHover={{ scale: 1.08 }}
+          animate={avatarState === "HAPPY" ? { scale: [1, 1.1, 1] } : {}}
+          transition={{ duration: 0.4 }}
+        >
+          🤖
+        </motion.div>
       </div>
 
       {/* XP bar */}
-      <div className="w-16 h-1.5 bg-slate-800 rounded-full overflow-hidden">
-        <div
+      <div className="w-14 h-1 rounded-full overflow-hidden" style={{ background: "rgba(255,255,255,0.08)" }}>
+        <motion.div
           className="h-full rounded-full transition-all duration-1000"
           style={{
-            background: color,
-            width: `${Math.min((avatarXP % 250) / 250 * 100, 100)}%`
+            background: `linear-gradient(90deg, ${color}, ${color}aa)`,
+            width: `${Math.min((avatarXP % 250) / 250 * 100, 100)}%`,
+            boxShadow: `0 0 6px ${color}`,
           }}
         />
       </div>
 
       {/* Level label */}
-      <span className="text-[10px] text-slate-500 font-medium">
-        Lv.{avatarLevel} {levelTitles[avatarLevel]} • {avatarXP}xp
+      <span className="text-[9px] font-medium" style={{ color: "rgba(255,255,255,0.3)" }}>
+        Lv.{avatarLevel} {levelTitles[avatarLevel]}
       </span>
     </div>
   )

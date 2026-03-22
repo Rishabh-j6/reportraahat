@@ -45,7 +45,7 @@ export default function BodyMap({ organFlags }: Props) {
 
         {/* Heart */}
         <ellipse cx="43" cy="62" rx="8" ry="8"
-          style={organFlags.heart ? { ...glowStyle, className: "organ-pulse" } : normalStyle}
+          style={organFlags.heart ? glowStyle : normalStyle}
           className={organFlags.heart && pulse ? "organ-pulse" : ""}/>
         {organFlags.heart && (
           <text x="43" y="65" textAnchor="middle" fontSize="8" fill="white">♥</text>

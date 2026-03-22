@@ -5,7 +5,7 @@
 # ============================================================
 
 from fastapi import APIRouter
-from app.schemas import NutritionRequest, NutritionResponse, FoodItem, DietaryFlag
+from app.schemas import NutritionRequest, NutritionResponse, FoodItem
 
 router = APIRouter()
 
@@ -234,27 +234,28 @@ def score_food(food_data: dict, target_nutrient: str) -> float:
 
 def build_food_item(name: str, data: dict) -> FoodItem:
     return FoodItem(
-        name_english=name,
-        name_hindi=data["name_hindi"],
-        nutrient_highlights={
-            k: v
-            for k, v in data.items()
-            if k not in ("name_hindi", "food_group", "serving")
-            and isinstance(v, (int, float))
-            and v > 0
-        },
-        serving_suggestion=data["serving"],
+        food_name=name,
+        food_name_hindi=data["name_hindi"],
         food_group=data["food_group"],
+        energy_kcal=data.get("calories_kcal"),
+        protein_g=data.get("protein_g"),
+        iron_mg=data.get("iron_mg"),
+        calcium_mg=data.get("calcium_mg"),
+        vitamin_c_mg=data.get("vitaminC_mg"),
+        vitamin_d_mcg=data.get("vitaminA_mcg"),  # approximate
+        fibre_g=data.get("fiber_g"),
+        why_recommended="",
+        serving_suggestion=data["serving"],
     )
 
 
-@router.get("/", response_model=NutritionResponse)
-def get_nutrition(dietary_flags: str = "", language: str = "EN"):
+@router.post("/", response_model=NutritionResponse)
+def get_nutrition(request: NutritionRequest):
     """
-    Query: /nutrition?dietary_flags=INCREASE_IRON,INCREASE_CALCIUM&language=EN
+    POST /nutrition with NutritionRequest JSON body.
     Returns top-10 Indian foods matching the flags.
     """
-    flags = [f.strip() for f in dietary_flags.split(",") if f.strip()]
+    flags = request.dietary_flags
 
     # Determine primary nutrient to sort by
     primary_nutrient = "iron_mg"  # sensible default
@@ -273,36 +274,43 @@ def get_nutrition(dietary_flags: str = "", language: str = "EN"):
     # Filter out unsafe foods for certain conditions
     filtered = scored
     if "AVOID_FATTY_FOODS" in flags:
-        filtered = [(n, d) for n, d in scored if d.get("calories_kcal", 0) < 200]
+        filtered = [(n, d)
+                    for n, d in scored if d.get("calories_kcal", 0) < 200]
     if "LOW_POTASSIUM_DIET" in flags:
         filtered = [(n, d) for n, d in scored if n not in ("Banana (Kela)",)]
+    if request.vegetarian:
+        filtered = [(n, d) for n, d in filtered if d.get(
+            "food_group") != "Eggs" and "Eggs" not in n]
+    # Note: allergy_flags not implemented in filtering, as IFCT data doesn't have allergens
 
     top_10 = [build_food_item(name, data) for name, data in filtered[:10]]
 
     # Build daily targets from flags
-    daily_targets: dict = {
-        "protein_g": 50,
-        "iron_mg": 18,
-        "calcium_mg": 1000,
-        "vitaminD_iu": 600,
-        "fiber_g": 25,
-        "calories_kcal": 2000,
+    daily_targets: dict[str, float] = {
+        "protein_g": 50.0,
+        "iron_mg": 18.0,
+        "calcium_mg": 1000.0,
+        "vitaminD_iu": 600.0,
+        "fiber_g": 25.0,
+        "calories_kcal": 2000.0,
     }
     for flag in flags:
         if flag in FLAG_TARGETS:
-            daily_targets.update(FLAG_TARGETS[flag])
+            daily_targets.update(
+                {k: float(v) for k, v in FLAG_TARGETS[flag].items() if isinstance(v, (int, float))})
 
-    # Deficiency summary
-    summaries = []
+    # Deficiencies list
+    deficiencies = []
     for flag in flags:
         if flag in FLAG_TARGETS:
-            summaries.append(FLAG_TARGETS[flag].get("description", ""))
-    deficiency_summary = " ".join(summaries) if summaries else "Eat a balanced Indian diet with plenty of dals, sabzi, and roti."
+            desc = FLAG_TARGETS[flag].get("description", "")
+            if desc:
+                deficiencies.append(desc)
 
     return NutritionResponse(
         recommended_foods=top_10,
         daily_targets=daily_targets,
-        deficiency_summary=deficiency_summary,
+        deficiencies=deficiencies,
     )
 
 
@@ -313,12 +321,13 @@ def get_nutrition_fallback():
     return NutritionResponse(
         recommended_foods=[build_food_item(n, d) for n, d in default_foods],
         daily_targets={
-            "protein_g": 50,
-            "iron_mg": 18,
-            "calcium_mg": 1000,
-            "vitaminD_iu": 600,
-            "fiber_g": 25,
-            "calories_kcal": 2000,
+            "protein_g": 50.0,
+            "iron_mg": 18.0,
+            "calcium_mg": 1000.0,
+            "vitaminD_iu": 600.0,
+            "fiber_g": 25.0,
+            "calories_kcal": 2000.0,
         },
-        deficiency_summary="Eat a balanced diet with seasonal Indian vegetables, lentils, and millets.",
+        deficiencies=[
+            "Eat a balanced diet with seasonal Indian vegetables, lentils, and millets."],
     )
